@@ -1,22 +1,1422 @@
+/* ==========================================================================
+   FinanceWizard – site.css
+   Theme tokens (light / dark), Bootstrap 5.3 bridge, glassmorphism, landing,
+   auth and chart styles. All text colours are chosen for WCAG 2.1 AA (>= 4.5:1)
+   against the surfaces they are used on; UI components/graphics target >= 3:1.
+   ========================================================================== */
+
+/* ---------- 1. Design tokens ------------------------------------------------ */
+:root,
+html[data-bs-theme="light"] {
+    color-scheme: light;
+    --fw-bg: #f5f7fc;
+    --fw-bg-alt: #eaeffa;
+    --fw-surface: #ffffff;
+    --fw-surface-2: #eef1f8;
+    --fw-text: #1b2236;
+    --fw-text-muted: #4a5470;
+    --fw-border: #c9d0e0;
+    --fw-input-border: #6b7590;
+    --fw-primary: #1d4ed8;
+    --fw-primary-hover: #1e40af;
+    --fw-on-primary: #ffffff;
+    --fw-link: #1d4ed8;
+    --fw-gold: #f2c75c;
+    --fw-gold-hover: #e6b73a;
+    --fw-on-gold: #1b2236;
+    --fw-gold-text: #8a5a00;
+    --fw-income: #166534; /* text on light surfaces */
+    --fw-income-solid: #15803d; /* badges / buttons with white text */
+    --fw-income-bar: #15803d; /* chart fill */
+    --fw-expense: #b91c1c;
+    --fw-expense-solid: #b91c1c;
+    --fw-expense-bar: #dc2626;
+    --fw-success-btn: #15803d;
+    --fw-success-btn-hover: #166534;
+    --fw-on-success-btn: #ffffff;
+    --fw-secondary-btn: #475069;
+    --fw-secondary-btn-hover: #343c52;
+    --fw-on-secondary-btn: #ffffff;
+    --fw-nav-bg: #0f2a6b;
+    --fw-hero-bg: linear-gradient(135deg, #e8eefc 0%, #fdf6e3 100%);
+    --fw-cta-bg: linear-gradient(135deg, #0f2a6b 0%, #1d4ed8 100%);
+    --fw-aside-bg: linear-gradient(160deg, #0f2a6b 0%, #1d4ed8 100%);
+    --fw-glass-bg: rgba(255, 255, 255, 0.74);
+    --fw-glass-border: rgba(15, 42, 107, 0.14);
+    --fw-shadow: 0 12px 32px rgba(15, 42, 107, 0.12);
+    --fw-shadow-sm: 0 4px 14px rgba(15, 42, 107, 0.1);
+    --fw-focus: #1d4ed8;
+    --fw-blob-blue: rgba(29, 78, 216, 0.22);
+    --fw-blob-gold: rgba(242, 199, 92, 0.55);
+}
+
+html[data-bs-theme="dark"] {
+    color-scheme: dark;
+    --fw-bg: #0b1220;
+    --fw-bg-alt: #0f1a30;
+    --fw-surface: #131c31;
+    --fw-surface-2: #1b2641;
+    --fw-text: #e8ecf5;
+    --fw-text-muted: #aab4cc;
+    --fw-border: #2c3a5c;
+    --fw-input-border: #8b97b5;
+    --fw-primary: #7aa2ff;
+    --fw-primary-hover: #a5c0ff;
+    --fw-on-primary: #0b1220;
+    --fw-link: #8fb0ff;
+    --fw-gold: #f2c75c;
+    --fw-gold-hover: #f7d98a;
+    --fw-on-gold: #1b2236;
+    --fw-gold-text: #f2c75c;
+    --fw-income: #4ade80;
+    --fw-income-solid: #15803d;
+    --fw-income-bar: #4ade80;
+    --fw-expense: #ff8a8a;
+    --fw-expense-solid: #b91c1c;
+    --fw-expense-bar: #ff8a8a;
+    --fw-success-btn: #4ade80;
+    --fw-success-btn-hover: #86efac;
+    --fw-on-success-btn: #052e16;
+    --fw-secondary-btn: #2a3550;
+    --fw-secondary-btn-hover: #36446a;
+    --fw-on-secondary-btn: #e8ecf5;
+    --fw-nav-bg: #0a1226;
+    --fw-hero-bg: linear-gradient(135deg, #0b1220 0%, #14234a 100%);
+    --fw-cta-bg: linear-gradient(135deg, #0a1226 0%, #1e3a8a 100%);
+    --fw-aside-bg: linear-gradient(160deg, #0a1226 0%, #1e3a8a 100%);
+    --fw-glass-bg: rgba(19, 28, 49, 0.72);
+    --fw-glass-border: rgba(255, 255, 255, 0.14);
+    --fw-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    --fw-shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
+    --fw-focus: #a5c0ff;
+    --fw-blob-blue: rgba(122, 162, 255, 0.25);
+    --fw-blob-gold: rgba(242, 199, 92, 0.22);
+}
+
+/* ---------- 2. Bootstrap 5.3 bridge ---------------------------------------- */
+html[data-bs-theme] {
+    --bs-body-bg: var(--fw-bg);
+    --bs-body-color: var(--fw-text);
+    --bs-emphasis-color: var(--fw-text);
+    --bs-secondary-color: var(--fw-text-muted);
+    --bs-secondary-bg: var(--fw-surface-2);
+    --bs-tertiary-bg: var(--fw-surface-2);
+    --bs-border-color: var(--fw-border);
+    --bs-link-color: var(--fw-link);
+    --bs-link-hover-color: var(--fw-primary-hover);
+    --bs-link-color-rgb: 29, 78, 216;
+    --bs-heading-color: var(--fw-text);
+}
+
 html {
-  font-size: 14px;
+    font-size: 15px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
+    background-color: var(--fw-bg);
+    color: var(--fw-text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--fw-link);
+}
+
+    a:hover {
+        color: var(--fw-primary-hover);
+    }
+
+/* Smooth theme switch (class is added by the toggle script for ~0.4s) */
+.fw-theme-anim,
+.fw-theme-anim *,
+.fw-theme-anim *::before,
+.fw-theme-anim *::after {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease !important;
+}
+
+/* Accessibility helpers */
+:focus-visible {
+    outline: 3px solid var(--fw-focus);
+    outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.page-link:focus-visible {
+    outline: 3px solid var(--fw-focus);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.fw-skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 2000;
+    padding: 0.6rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--fw-gold);
+    color: var(--fw-on-gold);
+    font-weight: 700;
+    text-decoration: none;
+    transition: top 0.2s ease;
+}
+
+    .fw-skip-link:focus {
+        top: 1rem;
+        color: var(--fw-on-gold);
+    }
+
+/* ---------- 3. Buttons (self-contained: works with Bootstrap 5.0 - 5.3) ---- */
+.btn {
+    font-weight: 600;
+    border-radius: 0.65rem;
+}
+
+    .btn:focus {
+        box-shadow: none;
+    }
+
+    .btn:focus-visible {
+        outline: 3px solid var(--fw-focus);
+        outline-offset: 2px;
+    }
+
+.btn-primary {
+    --fw-btn-color: var(--fw-on-primary);
+    --fw-btn-bg: var(--fw-primary);
+    --fw-btn-hover: var(--fw-primary-hover);
+}
+
+.btn-success {
+    --fw-btn-color: var(--fw-on-success-btn);
+    --fw-btn-bg: var(--fw-success-btn);
+    --fw-btn-hover: var(--fw-success-btn-hover);
+}
+
+.btn-secondary {
+    --fw-btn-color: var(--fw-on-secondary-btn);
+    --fw-btn-bg: var(--fw-secondary-btn);
+    --fw-btn-hover: var(--fw-secondary-btn-hover);
+}
+
+.btn-gold {
+    --fw-btn-color: var(--fw-on-gold);
+    --fw-btn-bg: var(--fw-gold);
+    --fw-btn-hover: var(--fw-gold-hover);
+}
+
+.btn.btn-primary, .btn.btn-success, .btn.btn-secondary, .btn.btn-gold {
+    color: var(--fw-btn-color);
+    background-color: var(--fw-btn-bg);
+    border-color: var(--fw-btn-bg);
+}
+
+    .btn.btn-primary:hover, .btn.btn-primary:focus, .btn.btn-primary:active, .btn.btn-primary.active,
+    .btn.btn-success:hover, .btn.btn-success:focus, .btn.btn-success:active, .btn.btn-success.active,
+    .btn.btn-secondary:hover, .btn.btn-secondary:focus, .btn.btn-secondary:active, .btn.btn-secondary.active,
+    .btn.btn-gold:hover, .btn.btn-gold:focus, .btn.btn-gold:active, .btn.btn-gold.active {
+        color: var(--fw-btn-color);
+        background-color: var(--fw-btn-hover);
+        border-color: var(--fw-btn-hover);
+    }
+
+.btn.btn-outline-fw {
+    color: var(--fw-link);
+    background-color: transparent;
+    border: 2px solid var(--fw-primary);
+}
+
+    .btn.btn-outline-fw:hover, .btn.btn-outline-fw:focus, .btn.btn-outline-fw:active {
+        color: var(--fw-on-primary);
+        background-color: var(--fw-primary);
+        border-color: var(--fw-primary);
+    }
+
+/* ---------- 4. Navbar & footer --------------------------------------------- */
+.fw-navbar {
+    background-color: var(--fw-nav-bg);
+    border-bottom: 3px solid var(--fw-gold);
+    box-shadow: var(--fw-shadow-sm);
+}
+
+    .fw-navbar .navbar-brand {
+        color: #ffffff;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+        .fw-navbar .navbar-brand .fw-brand-accent {
+            color: var(--fw-gold);
+        }
+
+    .fw-navbar .nav-link {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        border-bottom: 2px solid transparent;
+        padding-bottom: 0.4rem;
+    }
+
+        .fw-navbar .nav-link:hover {
+            color: #ffffff;
+            border-bottom-color: rgba(242, 199, 92, 0.6);
+        }
+
+        .fw-navbar .nav-link.active {
+            color: #ffffff;
+            border-bottom-color: var(--fw-gold);
+        }
+
+    .fw-navbar .navbar-text {
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    .fw-navbar :focus-visible {
+        outline-color: var(--fw-gold);
+    }
+
+    .fw-navbar .navbar-toggler {
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+
+.fw-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+    .fw-theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.14);
+        transform: rotate(12deg);
+    }
+
+    .fw-theme-toggle svg {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .fw-theme-toggle .fw-icon-sun {
+        display: none;
+    }
+
+html[data-bs-theme="dark"] .fw-theme-toggle .fw-icon-sun {
+    display: inline;
+}
+
+html[data-bs-theme="dark"] .fw-theme-toggle .fw-icon-moon {
+    display: none;
+}
+
+.fw-footer {
+    background: var(--fw-surface);
+    border-top: 1px solid var(--fw-border);
+    color: var(--fw-text-muted);
+}
+
+    .fw-footer a {
+        color: var(--fw-link);
+    }
+
+/* ---------- 5. Bootstrap components – theme-safe overrides ------------------ */
+@media (min-width: 768px) {
+    .fw-navbar .navbar-nav {
+        gap: 0.5rem;
+    }
+}
+
+.card {
+    background-color: var(--fw-surface);
+    color: var(--fw-text);
+    border: 1px solid var(--fw-border);
+    border-radius: 0.85rem;
+}
+
+html[data-bs-theme] .bg-light {
+    background-color: var(--fw-surface-2) !important;
+    color: var(--fw-text);
+}
+
+.text-muted {
+    color: var(--fw-text-muted) !important;
+}
+
+.text-success {
+    color: var(--fw-income) !important;
+}
+
+.text-danger {
+    color: var(--fw-expense) !important;
+}
+
+.text-primary {
+    color: var(--fw-link) !important;
+}
+
+.text-secondary {
+    color: var(--fw-text-muted) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--fw-income-solid) !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--fw-expense-solid) !important;
+    color: #ffffff !important;
+}
+
+.table {
+    color: var(--fw-text);
+    border-color: var(--fw-border);
+    --bs-table-striped-color: var(--fw-text);
+    --bs-table-hover-color: var(--fw-text);
+    --bs-table-striped-bg: rgba(128, 128, 128, 0.1);
+    --bs-table-hover-bg: rgba(128, 128, 128, 0.16);
+}
+
+.table-dark {
+    --bs-table-bg: var(--fw-nav-bg);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.form-control,
+.form-select {
+    background-color: var(--fw-surface);
+    color: var(--fw-text);
+    border: 1px solid var(--fw-input-border);
+    border-radius: 0.65rem;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        background-color: var(--fw-surface);
+        color: var(--fw-text);
+        border-color: var(--fw-primary);
+        box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--fw-primary) 28%, transparent);
+    }
+
+    .form-control::placeholder {
+        color: var(--fw-text-muted);
+        opacity: 0.8;
+    }
+
+html[data-bs-theme="dark"] .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e8ecf5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.input-group-text {
+    background-color: var(--fw-surface-2);
+    color: var(--fw-text);
+    border: 1px solid var(--fw-input-border);
+    border-radius: 0.65rem;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    opacity: 1;
+}
+
+.page-link {
+    color: var(--fw-link);
+    background-color: var(--fw-surface);
+    border: 1px solid var(--fw-border);
+}
+
+    .page-link:hover, .page-link:focus {
+        color: var(--fw-primary-hover);
+        background-color: var(--fw-surface-2);
+        border-color: var(--fw-border);
+        box-shadow: none;
+    }
+
+.page-item.active .page-link {
+    color: var(--fw-on-primary);
+    background-color: var(--fw-primary);
+    border-color: var(--fw-primary);
+}
+
+.page-item.disabled .page-link {
+    color: var(--fw-text-muted);
+    background-color: var(--fw-surface);
+    border-color: var(--fw-border);
+}
+
+.alert {
+    border-radius: 0.75rem;
+    color: var(--fw-text);
+}
+
+.alert-success {
+    background-color: color-mix(in srgb, var(--fw-income) 12%, var(--fw-surface));
+    border-color: var(--fw-income);
+}
+
+.alert-danger {
+    background-color: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
+    border-color: var(--fw-expense);
+}
+
+html[data-bs-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* ---------- 6. Validation --------------------------------------------------- */
+.fw-error,
+.field-validation-error {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--fw-expense);
+}
+
+.input-validation-error,
+.form-control.input-validation-error {
+    border-color: var(--fw-expense);
+    border-width: 2px;
+}
+
+.fw-alert-error {
+    border: 1px solid var(--fw-expense);
+    border-left-width: 5px;
+    background: color-mix(in srgb, var(--fw-expense) 10%, var(--fw-surface));
+    color: var(--fw-text);
+    border-radius: 0.65rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+    .fw-alert-error ul {
+        margin: 0;
+        padding-left: 1.1rem;
+    }
+
+    .fw-alert-error.validation-summary-valid {
+        display: none;
+    }
+
+/* ---------- 7. Glassmorphism utilities ------------------------------------- */
+.fw-glass {
+    background: var(--fw-surface);
+    border: 1px solid var(--fw-glass-border);
+    border-radius: 1.1rem;
+    box-shadow: var(--fw-shadow);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .fw-glass {
+        background: var(--fw-glass-bg);
+        -webkit-backdrop-filter: blur(16px) saturate(140%);
+        backdrop-filter: blur(16px) saturate(140%);
+    }
+}
+
+.fw-glass-hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .fw-glass-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 40px rgba(15, 42, 107, 0.2);
+    }
+
+/* ---------- 8. Landing page ------------------------------------------------- */
+.fw-section {
+    padding: 3.5rem 0;
+}
+
+.fw-section-title {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.fw-lead {
+    color: var(--fw-text-muted);
+    font-size: 1.15rem;
+}
+
+.fw-hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--fw-hero-bg);
+    border: 1px solid var(--fw-border);
+    border-radius: 1.5rem;
+    padding: clamp(1.75rem, 5vw, 4rem);
+}
+
+.fw-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.fw-blob-blue {
+    width: 26rem;
+    height: 26rem;
+    background: var(--fw-blob-blue);
+    top: -9rem;
+    left: -8rem;
+}
+
+.fw-blob-gold {
+    width: 22rem;
+    height: 22rem;
+    background: var(--fw-blob-gold);
+    bottom: -8rem;
+    right: -6rem;
+}
+
+.fw-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--fw-gold-text);
+    background: var(--fw-surface);
+    border: 1px solid var(--fw-glass-border);
+}
+
+.fw-headline {
+    font-size: clamp(2.1rem, 5vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.fw-highlight {
+    color: var(--fw-gold-text);
+}
+
+/* Mock dashboard */
+.fw-dashboard {
+    padding: 1.25rem;
+    animation: fw-float 6s ease-in-out infinite;
+}
+
+.fw-balance {
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.fw-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--fw-income);
+    background: color-mix(in srgb, var(--fw-income) 14%, var(--fw-surface));
+    border: 1px solid color-mix(in srgb, var(--fw-income) 45%, transparent);
+}
+
+.fw-kpi {
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.8rem;
+    background: var(--fw-surface-2);
+}
+
+.fw-kpi-label {
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-kpi-value {
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+
+.fw-income-text {
+    color: var(--fw-income);
+}
+
+.fw-expense-text {
+    color: var(--fw-expense);
+}
+
+.fw-tx-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+    .fw-tx-list li {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.55rem 0;
+        border-top: 1px solid var(--fw-border);
+        font-size: 0.95rem;
+    }
+
+/* Chart (inline SVG) */
+.fw-chart {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+    .fw-chart text {
+        fill: var(--fw-text-muted);
+        font-size: 12px;
+        font-family: inherit;
+    }
+
+    .fw-chart .fw-grid {
+        stroke: var(--fw-border);
+        stroke-width: 1;
+    }
+
+    .fw-chart .fw-axis {
+        stroke: var(--fw-text-muted);
+        stroke-width: 1.5;
+    }
+
+.fw-bar-income {
+    fill: var(--fw-income-bar);
+}
+
+.fw-bar-expense {
+    fill: var(--fw-expense-bar);
+}
+
+.fw-bar {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: fw-grow 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+    transition: opacity 0.2s ease;
+}
+
+.fw-bar-group {
+    cursor: pointer;
+}
+
+    .fw-bar-group:focus {
+        outline: none;
+    }
+
+.fw-hit {
+    fill: var(--fw-text);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.fw-bar-group:hover .fw-hit {
+    opacity: 0.08;
+}
+
+.fw-bar-group:focus-visible .fw-hit {
+    opacity: 0.14;
+    stroke: var(--fw-focus);
+    stroke-width: 2;
+}
+
+.fw-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.fw-swatch {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 0.2rem;
+    display: inline-block;
+}
+
+.fw-swatch-income {
+    background: var(--fw-income-bar);
+}
+
+.fw-swatch-expense {
+    background: var(--fw-expense-bar);
+}
+
+.fw-readout {
+    min-height: 1.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fw-text);
+}
+
+/* Feature cards */
+.fw-feature-card {
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.fw-feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.85rem;
+    margin-bottom: 1rem;
+    background: var(--fw-nav-bg);
+    color: var(--fw-gold);
+}
+
+    .fw-feature-icon svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+.fw-feature-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.fw-feature-card p {
+    color: var(--fw-text-muted);
+    margin-bottom: 0;
+}
+
+/* Stats */
+.fw-stat {
+    padding: 1.5rem 1rem;
+    text-align: center;
+}
+
+.fw-stat-number {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 800;
+    color: var(--fw-text);
+    line-height: 1.1;
+}
+
+.fw-stat-label {
+    color: var(--fw-text-muted);
+    font-weight: 500;
+}
+
+/* CTA banner */
+.fw-cta {
+    background: var(--fw-cta-bg);
+    color: #ffffff;
+    border-radius: 1.5rem;
+    padding: clamp(2rem, 5vw, 3.5rem);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid var(--fw-gold);
+}
+
+    .fw-cta p {
+        color: rgba(255, 255, 255, 0.92);
+    }
+
+    .fw-cta :focus-visible {
+        outline-color: var(--fw-gold);
+    }
+
+    .fw-cta .btn-outline-light {
+        border-width: 2px;
+    }
+
+/* ---------- 9. Authentication ---------------------------------------------- */
+.fw-auth-shell {
+    max-width: 62rem;
+    margin: 1.5rem auto 2.5rem;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid var(--fw-glass-border);
+    box-shadow: var(--fw-shadow);
+    background: var(--fw-surface);
+}
+
+.fw-auth-aside {
+    background: var(--fw-aside-bg);
+    color: #ffffff;
+    padding: 3rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+    .fw-auth-aside::after {
+        content: "";
+        position: absolute;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 50%;
+        right: -7rem;
+        bottom: -7rem;
+        background: rgba(242, 199, 92, 0.28);
+        filter: blur(8px);
+    }
+
+    .fw-auth-aside h2 {
+        font-weight: 800;
+    }
+
+    .fw-auth-aside p, .fw-auth-aside li {
+        color: rgba(255, 255, 255, 0.94);
+    }
+
+    .fw-auth-aside ul {
+        list-style: none;
+        padding: 0;
+        margin: 1.5rem 0 0;
+    }
+
+    .fw-auth-aside li {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+
+        .fw-auth-aside li svg {
+            flex: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            color: var(--fw-gold);
+            margin-top: 0.15rem;
+        }
+
+.fw-auth-main {
+    padding: clamp(1.75rem, 5vw, 3rem);
+    background: var(--fw-surface);
+}
+
+    .fw-auth-main h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+    }
+
+.fw-auth-sub {
+    color: var(--fw-text-muted);
+}
+
+.fw-field {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.fw-field-icon {
+    position: absolute;
+    left: 1rem;
+    top: 1.05rem;
+    z-index: 4;
+    color: var(--fw-text-muted);
+    pointer-events: none;
+    line-height: 0;
+}
+
+    .fw-field-icon svg {
+        width: 1.3rem;
+        height: 1.3rem;
+    }
+
+.fw-field .form-floating > .form-control {
+    padding-left: 2.9rem;
+}
+
+.fw-field .form-floating > label {
+    padding-left: 2.9rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-field .form-floating > .form-control:focus ~ label,
+.fw-field .form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--fw-text-muted);
+}
+
+    .fw-field .form-floating > .form-control:focus ~ label::after,
+    .fw-field .form-floating > .form-control:not(:placeholder-shown) ~ label::after {
+        background: transparent;
+    }
+
+.fw-field .form-control:focus ~ .fw-field-icon {
+    color: var(--fw-primary);
+}
+
+/* ---------- 9b. Transactions pages (app-style, compact) --------------------
+   Solid surfaces, thin borders, small shadow. No gradients, blobs or glass.
+   ---------------------------------------------------------------------------- */
+.fw-panel {
+    background: var(--fw-surface);
+    color: var(--fw-text);
+    border: 1px solid var(--fw-border);
+    border-radius: 0.6rem;
+    box-shadow: 0 1px 2px rgba(15, 42, 107, 0.06);
+    margin-bottom: 1rem;
+}
+
+html[data-bs-theme="dark"] .fw-panel {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.fw-muted {
+    color: var(--fw-text-muted);
+}
+
+.fw-page-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.25rem 0 1rem;
+}
+
+.fw-page-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0;
+}
+
+/* Compact buttons / controls (own sizing; independent of Bootstrap version) */
+.fw-btn-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    border-radius: 0.5rem;
+}
+
+.fw-control-sm {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.9rem;
+    border-radius: 0.5rem;
+}
+
+/* Balance summary */
+.fw-summary {
+    padding: 0.75rem 1rem;
+}
+
+.fw-summary-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--fw-text-muted);
+}
+
+.fw-summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+}
+
+.fw-summary-empty {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--fw-text-muted);
+}
+
+/* Filter bar */
+.fw-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+}
+
+.fw-filter-field {
+    flex: 1 1 9rem;
+    min-width: 0;
+}
+
+.fw-filter-search {
+    flex: 2 1 14rem;
+}
+
+.fw-filter-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.fw-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    padding: 0;
+    float: none;
+    width: auto;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--fw-text);
+}
+
+/* Table */
+.fw-table-panel {
+    overflow: hidden;
+}
+
+.fw-table-wrap {
+    overflow-x: auto;
+}
+
+.fw-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    color: var(--fw-text);
+    font-size: 0.925rem;
+}
+
+    .fw-table thead th {
+        padding: 0.55rem 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        color: var(--fw-text-muted);
+        background: var(--fw-surface-2);
+        border-bottom: 1px solid var(--fw-border);
+    }
+
+    .fw-table tbody td {
+        padding: 0.5rem 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--fw-border);
+    }
+
+    .fw-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .fw-table tbody tr:hover {
+        background: var(--fw-surface-2);
+    }
+
+.fw-col-date {
+    white-space: nowrap;
+}
+
+.fw-col-desc {
+    width: 100%;
+    min-width: 10rem;
+    overflow-wrap: anywhere;
+}
+
+.fw-date-main {
+    font-weight: 600;
+}
+
+.fw-date-sub {
+    margin-left: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-tx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.1rem 0.55rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+    .fw-tx-badge svg {
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    .fw-tx-badge.is-income {
+        color: var(--fw-income);
+        background: var(--fw-surface-2);
+        background: color-mix(in srgb, var(--fw-income) 12%, var(--fw-surface));
+        border-color: color-mix(in srgb, var(--fw-income) 40%, var(--fw-surface));
+    }
+
+    .fw-tx-badge.is-expense {
+        color: var(--fw-expense);
+        background: var(--fw-surface-2);
+        background: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
+        border-color: color-mix(in srgb, var(--fw-expense) 40%, var(--fw-surface));
+    }
+
+.fw-amount {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+    .fw-amount.is-income {
+        color: var(--fw-income);
+    }
+
+    .fw-amount.is-expense {
+        color: var(--fw-expense);
+    }
+
+/* Row actions */
+.fw-col-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.fw-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--fw-text-muted);
+    cursor: pointer;
+}
+
+    .fw-icon-btn svg {
+        width: 1.05rem;
+        height: 1.05rem;
+    }
+
+    .fw-icon-btn.is-danger:hover,
+    .fw-icon-btn.is-danger:focus-visible {
+        color: var(--fw-expense);
+        background: var(--fw-surface-2);
+        background: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
+        border-color: color-mix(in srgb, var(--fw-expense) 40%, var(--fw-surface));
+    }
+
+/* Empty state */
+.fw-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--fw-text-muted);
+}
+
+    .fw-empty svg {
+        width: 2.5rem;
+        height: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--fw-text-muted);
+    }
+
+    .fw-empty h2 {
+        margin: 0 0 0.25rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--fw-text);
+    }
+
+    .fw-empty p {
+        margin: 0 0 1rem;
+    }
+
+/* Pagination */
+.fw-pager {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0 1.5rem;
+}
+
+    .fw-pager .page-link {
+        min-width: 2.25rem;
+        text-align: center;
+    }
+
+/* Create form */
+.fw-form-card {
+    max-width: 32rem;
+    margin: 0.5rem auto 2rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.fw-form-title {
+    margin-bottom: 0.15rem;
+}
+
+.fw-form-sub {
+    margin: 0 0 1.25rem;
+    font-size: 0.925rem;
+}
+
+.fw-form-group {
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+    .fw-form-group > legend.fw-label {
+        float: none;
+        width: auto;
+    }
+
+.fw-hint {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-amount-input {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.fw-form-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+    .fw-form-actions .btn {
+        padding: 0.5rem 1.1rem;
+    }
+
+    .fw-form-actions .btn-primary {
+        flex: 1 1 auto;
+    }
+
+.fw-segment {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: var(--fw-surface-2);
+    border: 1px solid var(--fw-border);
+    border-radius: 0.6rem;
+}
+
+    .fw-segment > div {
+        position: relative;
+    }
+
+    .fw-segment input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    .fw-segment label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        margin: 0;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.45rem;
+        font-weight: 600;
+        color: var(--fw-text-muted);
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+        .fw-segment label:hover {
+            color: var(--fw-text);
+        }
+
+        .fw-segment label svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+    .fw-segment input:checked + label.is-expense {
+        background: var(--fw-expense-solid);
+        color: #ffffff;
+    }
+
+    .fw-segment input:checked + label.is-income {
+        background: var(--fw-income-solid);
+        color: #ffffff;
+    }
+
+    .fw-segment input:focus-visible + label {
+        outline: 3px solid var(--fw-focus);
+        outline-offset: 2px;
+    }
+
+@media (max-width: 575.98px) {
+    .fw-filter-actions {
+        flex: 1 1 100%;
+    }
+
+        .fw-filter-actions .btn {
+            flex: 1 1 0;
+        }
+
+    .fw-table thead th,
+    .fw-table tbody td {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
+
+/* ---------- 10. Motion ------------------------------------------------------ */
+@keyframes fw-grow {
+    from {
+        transform: scaleY(0);
+    }
+
+    to {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes fw-float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
 }

@@ -1,27 +1,69 @@
 @model ST2_2026_Team_6_FinanceWizard.Models.LoginViewModel
 @{
-    ViewData["Title"] = "Вход";
+    ViewData["Title"] = "Log in";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <h2 class="text-center mb-4">Вход в системата</h2>
-        <form asp-action="Login" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label">Имейл</label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label">Парола</label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Вход</button>
-        </form>
-        <div class="mt-3 text-center">
-            <a asp-action="Register">Нямате профил? Регистрирайте се тук.</a>
-        </div>
+<div class="fw-auth-shell">
+    <div class="row g-0">
+        <aside class="col-lg-5 d-none d-lg-flex fw-auth-aside" aria-hidden="false">
+            <h2 class="mb-3">Welcome back</h2>
+            <p class="mb-0">Pick up right where you left off and keep every euro accounted for.</p>
+            <ul>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5" /></svg>
+                    <span>Live wallet balance after every transaction</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5" /></svg>
+                    <span>Search and filter your full history</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5" /></svg>
+                    <span>Secure sign-in for your financial data</span>
+                </li>
+            </ul>
+        </aside>
+
+        <section class="col-lg-7 fw-auth-main" aria-labelledby="login-heading">
+            <h1 id="login-heading" class="mb-1">Log in</h1>
+            <p class="fw-auth-sub mb-4">Enter your credentials to access your wallet.</p>
+
+            <form asp-action="Login" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
+
+                <div class="fw-field">
+                    <span class="fw-field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+                    </span>
+                    <div class="form-floating">
+                        <input asp-for="Email" class="form-control" placeholder="name@example.com" autocomplete="email" />
+                        <label asp-for="Email"></label>
+                    </div>
+                    <span asp-validation-for="Email" class="fw-error"></span>
+                </div>
+
+                <div class="fw-field">
+                    <span class="fw-field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                    </span>
+                    <div class="form-floating">
+                        <input asp-for="Password" class="form-control" placeholder="Password" autocomplete="current-password" />
+                        <label asp-for="Password"></label>
+                    </div>
+                    <span asp-validation-for="Password" class="fw-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Log in</button>
+            </form>
+
+            <p class="text-center mt-4 mb-0">
+                Don't have an account?
+                <a asp-action="Register" class="fw-bold">Create one</a>
+            </p>
+        </section>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

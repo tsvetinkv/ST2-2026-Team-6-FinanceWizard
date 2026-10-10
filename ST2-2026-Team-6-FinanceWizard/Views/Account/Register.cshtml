@@ -1,34 +1,91 @@
 @model ST2_2026_Team_6_FinanceWizard.Models.RegisterViewModel
 @{
-    ViewData["Title"] = "Регистрация";
+    ViewData["Title"] = "Register";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-4">
-        <h2 class="text-center mb-4">Регистрация</h2>
-        <form asp-action="Register" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label">Име</label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label">Имейл</label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label">Парола</label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-            <div class="mb-3">
-                <label asp-for="ConfirmPassword" class="form-label">Потвърди парола</label>
-                <input asp-for="ConfirmPassword" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button type="submit" class="btn btn-success w-100">Регистрирай се</button>
-        </form>
+<div class="fw-auth-shell">
+    <div class="row g-0">
+        <aside class="col-lg-5 d-none d-lg-flex fw-auth-aside">
+            <h2 class="mb-3">Start in under a minute</h2>
+            <p class="mb-0">Create your free account and get a personal wallet ready to track.</p>
+            <ul>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5" /></svg>
+                    <span>Record income and expenses in seconds</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5" /></svg>
+                    <span>Passwords stored as secure hashes</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6L9 17l-5-5" /></svg>
+                    <span>Works on your phone, tablet and desktop</span>
+                </li>
+            </ul>
+        </aside>
+
+        <section class="col-lg-7 fw-auth-main" aria-labelledby="register-heading">
+            <h1 id="register-heading" class="mb-1">Create an account</h1>
+            <p class="fw-auth-sub mb-4">It only takes a few details to get started.</p>
+
+            <form asp-action="Register" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
+
+                <div class="fw-field">
+                    <span class="fw-field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+                    </span>
+                    <div class="form-floating">
+                        <input asp-for="Name" class="form-control" placeholder="Name" autocomplete="name" />
+                        <label asp-for="Name"></label>
+                    </div>
+                    <span asp-validation-for="Name" class="fw-error"></span>
+                </div>
+
+                <div class="fw-field">
+                    <span class="fw-field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+                    </span>
+                    <div class="form-floating">
+                        <input asp-for="Email" class="form-control" placeholder="name@example.com" autocomplete="email" />
+                        <label asp-for="Email"></label>
+                    </div>
+                    <span asp-validation-for="Email" class="fw-error"></span>
+                </div>
+
+                <div class="fw-field">
+                    <span class="fw-field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                    </span>
+                    <div class="form-floating">
+                        <input asp-for="Password" class="form-control" placeholder="Password" autocomplete="new-password" />
+                        <label asp-for="Password"></label>
+                    </div>
+                    <span asp-validation-for="Password" class="fw-error"></span>
+                </div>
+
+                <div class="fw-field">
+                    <span class="fw-field-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><path d="M9 12l2 2 4-4" /></svg>
+                    </span>
+                    <div class="form-floating">
+                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm password" autocomplete="new-password" />
+                        <label asp-for="ConfirmPassword"></label>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="fw-error"></span>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100 mt-2">Create account</button>
+            </form>
+
+            <p class="text-center mt-4 mb-0">
+                Already have an account?
+                <a asp-action="Login" class="fw-bold">Log in</a>
+            </p>
+        </section>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

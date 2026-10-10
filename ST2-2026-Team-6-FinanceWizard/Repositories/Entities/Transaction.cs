@@ -7,7 +7,7 @@ public class Transaction
     public DateTime Date { get; set; }
     public string? Description { get; set; }
 
-    public string Type { get; set; } = "Expense"; // "Income" или "Expense"
+    public string Type { get; set; } = "Expense"; // "Income" or "Expense"
 
     public long WalletId { get; set; }
     public Wallet Wallet { get; set; } = null!;

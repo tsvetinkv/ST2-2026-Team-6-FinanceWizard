@@ -16,10 +16,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
         public async Task<Wallet?> GetByUserIdAsync(long userId)
         {
-            var wallet = await _walletRepo.All()
-                .FirstOrDefaultAsync(w => w.UserId == userId);
-
-            return wallet;
+            return await _walletRepo.All().FirstOrDefaultAsync(w => w.UserId == userId);
         }
 
         public async Task CreateWalletAsync(decimal initialBalance, string currency, long userId)
@@ -37,7 +34,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
         public async Task<bool> HasSufficientFundsAsync(long userId, decimal amount)
         {
-            var wallet = await _walletRepo.All().FirstOrDefaultAsync(w => w.UserId == userId);
+            var wallet = await GetByUserIdAsync(userId);
             return wallet != null && wallet.Balance >= amount;
         }
 
@@ -45,13 +42,13 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
         {
             if (newBalance < 0)
             {
-                throw new ArgumentException("Балансът на портфейла не може да бъде отрицателно число.");
+                throw new ArgumentException("The wallet balance cannot be negative.");
             }
 
-            var wallet = await _walletRepo.All().FirstOrDefaultAsync(w => w.UserId == userId);
+            var wallet = await GetByUserIdAsync(userId);
             if (wallet == null)
             {
-                throw new InvalidOperationException("Портфейлът на потребителя не беше намерен.");
+                throw new InvalidOperationException("The user's wallet was not found.");
             }
 
             wallet.Balance = newBalance;

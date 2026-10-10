@@ -1,19 +1,18 @@
-﻿using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
+using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
-namespace ST2_2026_Team_6_FinanceWizard.Services.Contracts
+namespace ST2_2026_Team_6_FinanceWizard.Services.Contracts;
+
+public interface IWalletService
 {
-    public interface IWalletService
-    {
-        // Get the user's wallet details (nullable if no wallet exists)
-        Task<Wallet?> GetByUserIdAsync(long userId);
+    // Gets the user's wallet, or null if none exists
+    Task<Wallet?> GetByUserIdAsync(long userId);
 
-        // Create the initial wallet when user registers
-        Task CreateWalletAsync(decimal initialBalance, string currency, long userId);
+    // Creates the initial wallet when a user registers
+    Task CreateWalletAsync(decimal initialBalance, string currency, long userId);
 
-        // Check if user has enough money
-        Task<bool> HasSufficientFundsAsync(long userId, decimal amount);
+    // Checks whether the user has enough funds
+    Task<bool> HasSufficientFundsAsync(long userId, decimal amount);
 
-        // Update the wallet balance
-        Task UpdateBalanceAsync(long userId, decimal newBalance);
-    }
+    // Updates the wallet balance
+    Task UpdateBalanceAsync(long userId, decimal newBalance);
 }

@@ -1,8 +1,252 @@
+@using System.Globalization
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+
+    // Demo data for the mock chart (values in thousands of euros)
+    var months = new[] { "May", "Jun", "Jul", "Aug", "Sep", "Oct" };
+    var income = new[] { 3.2, 3.4, 3.1, 3.8, 3.6, 4.2 };
+    var expense = new[] { 2.4, 2.7, 2.9, 2.5, 2.8, 2.6 };
+
+    const double baseY = 200;   // chart baseline
+    const double unit = 36;     // pixels per 1k
+    const double left = 48;     // left padding for axis labels
+    const double groupW = 70;   // width of one month group
+
+    string F(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+
+    // Razor reserves the literal text element name, so SVG labels are emitted through this helper.
+    Microsoft.AspNetCore.Html.HtmlString T(double x, double y, string anchor, string label) =>
+        new Microsoft.AspNetCore.Html.HtmlString(
+            $"<text x=\"{F(x)}\" y=\"{F(y)}\" text-anchor=\"{anchor}\">{System.Net.WebUtility.HtmlEncode(label)}</text>");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (isAuthenticated)
+{
+    <section class="fw-hero" aria-labelledby="welcome-heading">
+        <span class="fw-blob fw-blob-blue" aria-hidden="true"></span>
+        <span class="fw-blob fw-blob-gold" aria-hidden="true"></span>
+        <h1 id="welcome-heading" class="fw-headline mb-3">Welcome back, <span class="fw-highlight">@User.Identity?.Name</span></h1>
+        <p class="fw-lead mb-4">Your wallet is ready. Review your latest activity or record a new transaction.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary btn-lg" asp-controller="Transactions" asp-action="Index">View transactions</a>
+            <a class="btn btn-outline-fw btn-lg" asp-controller="Transactions" asp-action="Create">New transaction</a>
+        </div>
+    </section>
+}
+else
+{
+    <!-- Hero -->
+    <section class="fw-hero" aria-labelledby="hero-heading">
+        <span class="fw-blob fw-blob-blue" aria-hidden="true"></span>
+        <span class="fw-blob fw-blob-gold" aria-hidden="true"></span>
+
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="fw-eyebrow mb-3">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 2l2.4 6.9H22l-6 4.6 2.3 7.1L12 16l-6.3 4.6L8 13.5 2 8.9h7.6z" /></svg>
+                    Personal finance, simplified
+                </span>
+                <h1 id="hero-heading" class="fw-headline mb-3">Master Your Money with <span class="fw-highlight">FinanceWizard</span></h1>
+                <p class="fw-lead mb-4">Track income and expenses, watch your balance update in real time, and understand exactly where your money goes &mdash; all in one elegant place.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-primary btn-lg px-4" asp-controller="Account" asp-action="Register">Get Started</a>
+                    <a class="btn btn-outline-fw btn-lg px-4" asp-controller="Account" asp-action="Login">Sign In</a>
+                </div>
+            </div>
+
+            <!-- Mock dashboard -->
+            <div class="col-lg-6">
+                <div class="fw-glass fw-dashboard" role="group" aria-label="Example dashboard preview">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="fw-kpi-label">Wallet balance (example)</div>
+                            <div class="fw-balance fw-count" data-target="12480" data-decimals="2" data-prefix="€">€12,480.00</div>
+                        </div>
+                        <span class="fw-pill">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+                            +8.4% this month
+                        </span>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="fw-kpi">
+                                <div class="fw-kpi-label">Income</div>
+                                <div class="fw-kpi-value fw-income-text">+€4,200.00</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="fw-kpi">
+                                <div class="fw-kpi-label">Expenses</div>
+                                <div class="fw-kpi-value fw-expense-text">&minus;€2,600.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <svg class="fw-chart" viewBox="0 0 480 236" role="group" aria-label="Bar chart comparing income and expenses for the last six months">
+                        @for (int k = 0; k <= 5; k++)
+                        {
+                            double y = baseY - unit * k;
+                            <line class="@(k == 0 ? "fw-axis" : "fw-grid")" x1="@F(left)" x2="470" y1="@F(y)" y2="@F(y)" />
+                            @T(left - 8, y + 4, "end", "€" + k + "k")
+                        }
+
+                        @for (int i = 0; i < months.Length; i++)
+                        {
+                            double gx = left + i * groupW + 9;
+                            double hi = income[i] * unit;
+                            double he = expense[i] * unit;
+                            <g class="fw-bar-group" tabindex="0" role="img"
+                               aria-label="@months[i]: income €@((int)(income[i] * 1000)), expenses €@((int)(expense[i] * 1000))"
+                               data-label="@months[i]" data-income="@((int)(income[i] * 1000))" data-expense="@((int)(expense[i] * 1000))">
+                                <rect class="fw-hit" x="@F(gx - 9)" y="12" width="@F(groupW)" height="188" rx="6" />
+                                <rect class="fw-bar fw-bar-income" style="--d:@(i * 90)ms" x="@F(gx)" y="@F(baseY - hi)" width="24" height="@F(hi)" rx="4" />
+                                <rect class="fw-bar fw-bar-expense" style="--d:@(i * 90 + 45)ms" x="@F(gx + 28)" y="@F(baseY - he)" width="24" height="@F(he)" rx="4" />
+                                @T(gx + 26, 222, "middle", months[i])
+                            </g>
+                        }
+                    </svg>
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2">
+                        <div class="fw-legend" aria-hidden="true">
+                            <span class="fw-legend-item"><span class="fw-swatch fw-swatch-income"></span>Income</span>
+                            <span class="fw-legend-item"><span class="fw-swatch fw-swatch-expense"></span>Expenses</span>
+                        </div>
+                        <div id="chartReadout" class="fw-readout" aria-live="polite">Hover or focus a month for details</div>
+                    </div>
+
+                    <ul class="fw-tx-list mt-3" aria-label="Example recent transactions">
+                        <li><span>Salary</span><span class="fw-income-text fw-bold">+€3,800.00</span></li>
+                        <li><span>Groceries</span><span class="fw-expense-text fw-bold">&minus;€142.50</span></li>
+                        <li><span>Rent</span><span class="fw-expense-text fw-bold">&minus;€650.00</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="fw-section" aria-labelledby="features-heading">
+        <div class="text-center mb-5">
+            <h2 id="features-heading" class="fw-section-title">Everything you need to stay in control</h2>
+            <p class="fw-lead mb-0">Powerful tools wrapped in a calm, simple interface.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-md-6 col-lg-3">
+                <article class="fw-glass fw-glass-hover fw-feature-card">
+                    <span class="fw-feature-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><path d="M12 3v3M21 12h-3" /></svg>
+                    </span>
+                    <h3>Smart Budgeting</h3>
+                    <p>Plan every euro with clear limits and see how each purchase moves you toward your goals.</p>
+                </article>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <article class="fw-glass fw-glass-hover fw-feature-card">
+                    <span class="fw-feature-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+                    </span>
+                    <h3>Instant Analytics</h3>
+                    <p>Your balance and history update the moment you add a transaction &mdash; no waiting, no spreadsheets.</p>
+                </article>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <article class="fw-glass fw-glass-hover fw-feature-card">
+                    <span class="fw-feature-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><path d="M9 12l2 2 4-4" /></svg>
+                    </span>
+                    <h3>Secure Wallet Tracking</h3>
+                    <p>Your wallet sits behind a protected sign-in, and passwords are stored as secure hashes.</p>
+                </article>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <article class="fw-glass fw-glass-hover fw-feature-card">
+                    <span class="fw-feature-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
+                    </span>
+                    <h3>Powerful Filters</h3>
+                    <p>Search by description and narrow by date range to find any transaction in seconds.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA banner -->
+    <section class="fw-section pt-0" aria-labelledby="cta-heading">
+        <div class="fw-cta">
+            <h2 id="cta-heading" class="fw-section-title mb-3">Ready to take control of your finances?</h2>
+            <p class="mb-4 mx-auto" style="max-width: 36rem;">Create your free account in under a minute and start tracking your money with confidence.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a class="btn btn-gold btn-lg px-4" asp-controller="Account" asp-action="Register">Get Started</a>
+                <a class="btn btn-outline-light btn-lg px-4" asp-controller="Account" asp-action="Login">Sign In</a>
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script>
+        (function() {
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // ---- Chart readout (hover / focus) ----
+            var readout = document.getElementById('chartReadout');
+            var groups = document.querySelectorAll('.fw-bar-group');
+            var defaultText = readout ? readout.textContent : '';
+
+            function fmt(n) { return '€' + Number(n).toLocaleString('en-US'); }
+            function show(g) {
+                if (!readout) return;
+                readout.textContent = g.dataset.label + ': income ' + fmt(g.dataset.income) +
+                    ' · expenses ' + fmt(g.dataset.expense);
+            }
+            function reset() { if (readout) readout.textContent = defaultText; }
+
+            groups.forEach(function(g) {
+                g.addEventListener('mouseenter', function() { show(g); });
+                g.addEventListener('focus', function() { show(g); });
+                g.addEventListener('mouseleave', reset);
+                g.addEventListener('blur', reset);
+            });
+
+            // ---- Count-up animation ----
+            var counters = document.querySelectorAll('.fw-count');
+            if (reduceMotion || !('IntersectionObserver' in window)) return;
+
+            function format(value, decimals) {
+                return value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+            }
+
+            function run(el) {
+                var target = parseFloat(el.dataset.target);
+                var decimals = parseInt(el.dataset.decimals || '0', 10);
+                var prefix = el.dataset.prefix || '';
+                var suffix = el.dataset.suffix || '';
+                var duration = 1200;
+                var start = null;
+
+                function step(ts) {
+                    if (start === null) start = ts;
+                    var p = Math.min((ts - start) / duration, 1);
+                    var eased = 1 - Math.pow(1 - p, 3);
+                    el.textContent = prefix + format(target * eased, decimals) + suffix;
+                    if (p < 1) window.requestAnimationFrame(step);
+                }
+                window.requestAnimationFrame(step);
+            }
+
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        run(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.4 });
+
+            counters.forEach(function(el) { observer.observe(el); });
+        })();
+    </script>
+}
