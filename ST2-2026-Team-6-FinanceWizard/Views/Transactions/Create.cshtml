@@ -1,38 +1,65 @@
 @model ST2_2026_Team_6_FinanceWizard.Models.TransactionCreateViewModel
 @{
-    ViewData["Title"] = "Добавяне на транзакция";
+    ViewData["Title"] = "Add transaction";
 }
 
-<h2>Добавяне на транзакция</h2>
+<div class="fw-panel fw-form-card">
+    <h1 class="fw-page-title fw-form-title">Add transaction</h1>
+    <p class="fw-muted fw-form-sub">Record an income or an expense in your wallet.</p>
 
-<form asp-action="Create" method="post" class="mt-4">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <form asp-action="Create" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 
-    <div class="mb-3">
-        <label asp-for="Amount" class="form-label">Сума</label>
-        <input asp-for="Amount" type="number" step="0.01" class="form-control" />
-        <span asp-validation-for="Amount" class="text-danger"></span>
-    </div>
+        <fieldset class="fw-form-group">
+            <legend class="fw-label">Type</legend>
+            <div class="fw-segment">
+                <div>
+                    <input type="radio" asp-for="Type" value="Expense" id="type-expense" />
+                    <label for="type-expense" class="is-expense">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M19 12l-7 7-7-7" /></svg>
+                        Expense
+                    </label>
+                </div>
+                <div>
+                    <input type="radio" asp-for="Type" value="Income" id="type-income" />
+                    <label for="type-income" class="is-income">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+                        Income
+                    </label>
+                </div>
+            </div>
+            <span asp-validation-for="Type" class="fw-error"></span>
+        </fieldset>
 
-    <div class="mb-3">
-        <label asp-for="Type" class="form-label">Тип</label>
-        <select asp-for="Type" class="form-select">
-            <option value="Expense">Разход</option>
-            <option value="Income">Приход</option>
-        </select>
-    </div>
+        <div class="fw-form-group">
+            <label asp-for="Amount" class="fw-label"></label>
+            <div class="input-group">
+                <span class="input-group-text" aria-hidden="true">€</span>
+                <input asp-for="Amount" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control fw-amount-input" placeholder="0.00" aria-describedby="amount-hint" />
+            </div>
+            <div id="amount-hint" class="fw-hint">Between 0.01 and 1,000,000.</div>
+            <span asp-validation-for="Amount" class="fw-error"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label">Описание</label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
+        <div class="fw-form-group">
+            <label asp-for="Description" class="fw-label"></label>
+            <input asp-for="Description" class="form-control" placeholder="e.g. Groceries, Salary..." maxlength="500" />
+            <span asp-validation-for="Description" class="fw-error"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="Date" class="form-label">Дата</label>
-        <input asp-for="Date" type="datetime-local" class="form-control" />
-    </div>
+        <div class="fw-form-group">
+            <label asp-for="Date" class="fw-label"></label>
+            <input asp-for="Date" type="datetime-local" class="form-control" />
+            <span asp-validation-for="Date" class="fw-error"></span>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Запази</button>
-    <a asp-action="Index" class="btn btn-secondary">Отказ</a>
-</form>
+        <div class="fw-form-actions">
+            <button type="submit" class="btn btn-primary">Save transaction</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -15,6 +15,12 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
 
         public IActionResult Index()
         {
+            // Signed-in users go straight to their transactions; the landing page is for guests only
+            if (User.Identity?.IsAuthenticated ?? false)
+            {
+                return RedirectToAction("Index", "Transactions");
+            }
+
             return View();
         }
 

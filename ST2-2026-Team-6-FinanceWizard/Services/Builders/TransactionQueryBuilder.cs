@@ -18,9 +18,14 @@
         public TransactionQueryBuilder FilterByDateRange(DateTime? fromDate, DateTime? toDate)
         {
             if (fromDate.HasValue)
-                _query = _query.Where(t => t.Date >= fromDate.Value);
+                _query = _query.Where(t => t.Date >= fromDate.Value.Date);
+
+            // Include the whole "to" day
             if (toDate.HasValue)
-                _query = _query.Where(t => t.Date <= toDate.Value);
+            {
+                var exclusiveEnd = toDate.Value.Date.AddDays(1);
+                _query = _query.Where(t => t.Date < exclusiveEnd);
+            }
             return this;
         }
 

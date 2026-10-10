@@ -11,7 +11,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
         public DateTime? ToDate { get; set; }
         public string? SearchTerm { get; set; }
 
-        // Потребителски портфейл
+        // The user's wallet
         public Wallet? Wallet { get; set; }
 
         // Pagination

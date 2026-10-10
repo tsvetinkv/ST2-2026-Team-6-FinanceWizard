@@ -4,16 +4,16 @@ namespace ST2_2026_Team_6_FinanceWizard.Services.Contracts
 {
     public interface IWalletService
     {
-        // Get the user's wallet details
-        Task<Wallet> GetByUserIdAsync(long userId);
+        // Gets the user's wallet, or null if none exists
+        Task<Wallet?> GetByUserIdAsync(long userId);
 
-        // Create the initial wallet when user registers
+        // Creates the initial wallet when a user registers
         Task CreateWalletAsync(decimal initialBalance, string currency, long userId);
 
-        // Check if user has enough money (Optional helper)
+        // Checks whether the user has enough funds
         Task<bool> HasSufficientFundsAsync(long userId, decimal amount);
 
-        //update the wallet balance
+        // Updates the wallet balance
         Task UpdateBalanceAsync(long userId, decimal newBalance);
     }
 }
