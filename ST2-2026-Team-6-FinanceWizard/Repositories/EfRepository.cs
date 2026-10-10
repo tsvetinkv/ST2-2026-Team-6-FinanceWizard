@@ -17,8 +17,8 @@ namespace ST2_2026_Team_6_FinanceWizard.Repositories
         {
             return _dbSet;
         }
-        
-        public async Task<T> GetByIdAsync(object id)
+
+        public async Task<T?> GetByIdAsync(object id)
         {
             return await _dbSet.FindAsync(id);
         }

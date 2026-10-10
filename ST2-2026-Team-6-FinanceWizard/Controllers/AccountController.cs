@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 using ST2_2026_Team_6_FinanceWizard.Models;
+using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 using System.Security.Claims;
 
 namespace ST2_2026_Team_6_FinanceWizard.Controllers
@@ -28,7 +28,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             var user = await _userService.ValidateUserAsync(model.Email, model.Password);
             if (user == null)
             {
-                ModelState.AddModelError("", "Грешен имейл или парола.");
+                ModelState.AddModelError("", "Invalid email or password.");
                 return View(model);
             }
 
@@ -59,12 +59,12 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
                 var created = await _userService.RegisterAsync(model.Name, model.Email, model.Password);
                 if (created == null)
                 {
-                    ModelState.AddModelError("", "Registration failed.");
+                    ModelState.AddModelError("", "Registration failed. Please try again.");
                     return View(model);
                 }
 
-                return RedirectToAction("Login");
-
+                TempData["SuccessMessage"] = "Registration successful. You can now sign in.";
+                return RedirectToAction(nameof(Login));
             }
             catch (Exception ex)
             {
@@ -78,7 +78,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login");
+            return RedirectToAction(nameof(Login));
         }
     }
 }
