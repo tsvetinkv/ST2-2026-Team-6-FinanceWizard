@@ -1,0 +1,27 @@
+@model IEnumerable<ST2_2026_Team_6_FinanceWizard.Repositories.Entities.Wallet>
+@{
+    ViewData["Title"] = "My Porfolios";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    <h2>My Portfolios</h2>
+    <a asp-action="Create" class="btn btn-success">+ New Portfolio</a>
+</div>
+
+<div class="alert alert-info shadow-sm">
+    <h4 class="mb-0">Total Balance: <strong>@ViewBag.TotalBalance BGN</strong></h4>
+</div>
+
+<div class="row">
+@foreach (var wallet in Model)
+{
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title text-secondary">@wallet.Name</h5>
+                <h3 class="text-primary mt-3 mb-0">@wallet.Balance @wallet.Currency</h3>
+            </div>
+        </div>
+    </div>
+}
+</div>

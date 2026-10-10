@@ -1,18 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿namespace ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
-namespace ST2_2026_Team_6_FinanceWizard.Repositories.Entities
+public class Wallet
 {
-    [Table("Wallets")]
-    public class Wallet
-    {
-        [Key]
-        public long Id { get; set; }
-        public decimal Balance { get; set; }
-        public string Currency { get; set; } = "€";
-        public long UserId { get; set; }
-        
-        [ForeignKey("UserId")]
-        public User User { get; set; }
-    }
+    public long Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Balance { get; set; }
+    public string Currency { get; set; } = "EUR";
+
+    public long UserId { get; set; }
+    public User? User { get; set; }
 }
