@@ -1193,6 +1193,40 @@ html[data-bs-theme="dark"] .fw-panel {
         color: var(--fw-expense);
     }
 
+/* Row actions */
+.fw-col-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.fw-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--fw-text-muted);
+    cursor: pointer;
+}
+
+    .fw-icon-btn svg {
+        width: 1.05rem;
+        height: 1.05rem;
+    }
+
+    .fw-icon-btn.is-danger:hover,
+    .fw-icon-btn.is-danger:focus-visible {
+        color: var(--fw-expense);
+        background: var(--fw-surface-2);
+        background: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
+        border-color: color-mix(in srgb, var(--fw-expense) 40%, var(--fw-surface));
+    }
+
 /* Empty state */
 .fw-empty {
     text-align: center;
@@ -1357,6 +1391,7 @@ html[data-bs-theme="dark"] .fw-panel {
         padding-right: 0.75rem;
     }
 }
+
 /* ---------- 10. Motion ------------------------------------------------------ */
 @keyframes fw-grow {
     from {

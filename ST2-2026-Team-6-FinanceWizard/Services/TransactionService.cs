@@ -66,5 +66,35 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
             return transaction;
         }
+
+        public async Task DeleteTransactionAsync(long id, long userId)
+        {
+            // Only finds the transaction if it belongs to this user's wallet
+            var transaction = await GetByIdAsync(id, userId);
+            if (transaction == null)
+            {
+                throw new InvalidOperationException("Transaction not found.");
+            }
+
+            var wallet = transaction.Wallet;
+            bool isIncome = string.Equals(transaction.Type, "Income", StringComparison.OrdinalIgnoreCase);
+
+            // Reverse the original effect: removing income lowers the balance, removing an expense raises it
+            decimal newBalance = isIncome
+                ? wallet.Balance - transaction.Amount
+                : wallet.Balance + transaction.Amount;
+
+            if (newBalance < 0)
+            {
+                throw new InvalidOperationException(
+                    $"This income cannot be deleted because the balance would become negative. Available balance: {wallet.Balance:F2} {wallet.Currency}");
+            }
+
+            // The wallet and the transaction share one DbContext, so a single save
+            // applies both changes in one database transaction (all or nothing).
+            wallet.Balance = newBalance;
+            _transactionRepo.Delete(transaction);
+            await _transactionRepo.SaveChangesAsync();
+        }
     }
 }
