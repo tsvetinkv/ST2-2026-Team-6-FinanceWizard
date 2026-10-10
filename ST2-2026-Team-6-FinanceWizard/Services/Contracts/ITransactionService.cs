@@ -7,5 +7,7 @@
         Task<Transaction?> GetByIdAsync(long id, long userId);
 
         Task<Transaction> CreateTransactionAsync(decimal amount, string description, string type, DateTime date, long userId);
+
+        Task DeleteTransactionAsync(long id, long userId);
     }
 }

@@ -91,6 +91,30 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(long id, string? returnUrl)
+        {
+            try
+            {
+                await _transactionService.DeleteTransactionAsync(id, GetUserId());
+                TempData["SuccessMessage"] = "Transaction deleted and wallet balance updated.";
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Transaction not found / balance would become negative
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            // Return to the same page and filters the user was on (local URLs only)
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Deposit(TransactionCreateViewModel model)
         {
             if (!ModelState.IsValid)
