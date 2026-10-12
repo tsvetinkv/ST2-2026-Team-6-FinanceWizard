@@ -1,0 +1,11 @@
+@model Tag
+@{
+    ViewData["Title"] = "Edit tag";
+}
+
+<partial name="_TagForm" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/fw-pickers.js" asp-append-version="true"></script>
+}

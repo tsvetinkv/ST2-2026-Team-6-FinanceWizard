@@ -4,15 +4,19 @@ namespace ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 public interface IWalletService
 {
-    // Gets the user's wallet, or null if none exists
-    Task<Wallet?> GetByUserIdAsync(long userId);
+    // All wallets of the user (spending / savings), ordered by name
+    Task<List<Wallet>> GetAllByUserIdAsync(long userId);
 
-    // Creates the initial wallet when a user registers
-    Task CreateWalletAsync(decimal initialBalance, string currency, long userId);
+    // One wallet, only if it belongs to the user
+    Task<Wallet?> GetByIdAsync(long walletId, long userId);
 
-    // Checks whether the user has enough funds
-    Task<bool> HasSufficientFundsAsync(long userId, decimal amount);
+    // Creates a new wallet for the user
+    Task<Wallet> CreateWalletAsync(string name, string type, decimal initialBalance, string currency, long userId);
 
-    // Updates the wallet balance
-    Task UpdateBalanceAsync(long userId, decimal newBalance);
+    // Changes an existing wallet of the user; returns null if the wallet is not theirs / not found
+    Task<Wallet?> UpdateWalletAsync(long walletId, string name, string type, decimal balance, string currency, long userId);
+
+    // Deletes a wallet of the user. Returns false if it is not theirs / not found.
+    // Throws InvalidOperationException while the wallet still has transactions.
+    Task<bool> DeleteWalletAsync(long walletId, long userId);
 }

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ST2_2026_Team_6_FinanceWizard.Repositories.Entities
@@ -12,6 +12,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Repositories.Entities
         public string Email { get; set; }
         public string PasswordHash { get; set; }
 
-        public Wallet Wallet { get; set; }
+        // A user can have several wallets (spending / savings)
+        public ICollection<Wallet> Wallets { get; set; } = new List<Wallet>();
     }
 }

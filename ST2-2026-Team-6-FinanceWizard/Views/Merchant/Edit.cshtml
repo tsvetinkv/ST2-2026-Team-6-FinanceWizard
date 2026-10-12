@@ -1,0 +1,11 @@
+@model MerchantFormViewModel
+@{
+    ViewData["Title"] = "Edit merchant";
+}
+
+<partial name="_MerchantForm" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/fw-pickers.js" asp-append-version="true"></script>
+}

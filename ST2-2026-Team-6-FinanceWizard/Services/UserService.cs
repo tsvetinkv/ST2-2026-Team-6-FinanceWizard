@@ -42,11 +42,11 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             await _userRepo.AddAsync(user);
             await _userRepo.SaveChangesAsync();
 
-            var wallet = new Wallet { UserId = user.Id, Balance = 0, Currency = "€" };
+            var wallet = new Wallet { UserId = user.Id, Name = "Main account", Type = WalletTypes.Spending, Balance = 0, Currency = "EUR" };
             await _walletRepo.AddAsync(wallet);
             await _walletRepo.SaveChangesAsync();
 
-            user.Wallet = wallet;
+            user.Wallets.Add(wallet);
             return user;
         }
 
@@ -73,7 +73,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
         public async Task<User?> GetByIdAsync(long userId)
         {
             var user = await _userRepo.All()
-                .Include(u => u.Wallet)
+                .Include(u => u.Wallets)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             return user;

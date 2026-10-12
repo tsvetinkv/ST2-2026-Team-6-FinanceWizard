@@ -1,0 +1,51 @@
+@model Category
+@{
+    bool isEdit = ViewData["CategoryId"] != null;
+    long? categoryId = isEdit ? Convert.ToInt64(ViewData["CategoryId"]) : null;
+
+    var current = string.IsNullOrWhiteSpace(Model.Icon) ? "tag" : Model.Icon;
+    var colorValue = Colors.Normalize(Model.Color) ?? "#1d4ed8";
+}
+
+<div class="fw-panel fw-form-card is-wide">
+    <h1 class="fw-page-title fw-form-title">@(isEdit ? "Edit category" : "Add category")</h1>
+    <p class="fw-muted fw-form-sub">Give it a name, pick any color and any icon.</p>
+
+    <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@categoryId" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
+
+        <div class="fw-item-card fw-preview" aria-hidden="true">
+            <span class="fw-avatar @Colors.Class(colorValue)" data-color-preview style="@Colors.Style(colorValue, Model.Name)"><i class="bi bi-@current fw-bi" data-icon-preview></i></span>
+            <div class="fw-item-name" data-name-preview data-empty="Category name">@(string.IsNullOrWhiteSpace(Model.Name) ? "Category name" : Model.Name.Trim())</div>
+        </div>
+
+        <div class="fw-form-group">
+            <label asp-for="Name" class="fw-label"></label>
+            <input asp-for="Name" class="form-control" placeholder="e.g. Groceries, Transport" maxlength="100" autofocus data-name-source />
+            <span asp-validation-for="Name" class="fw-error"></span>
+        </div>
+
+        <div class="fw-form-group">
+            <label for="ColorHex" class="fw-label">Color <span class="fw-muted">(optional)</span></label>
+            <div class="fw-color-row">
+                <input type="color" id="Color" name="Color" class="fw-color-input" value="@colorValue" aria-label="Pick a color" />
+                <input type="text" id="ColorHex" class="form-control fw-color-hex" value="@colorValue" maxlength="7" autocomplete="off" aria-label="Color hex code" />
+            </div>
+            <span asp-validation-for="Color" class="fw-error"></span>
+        </div>
+
+        <div class="fw-form-group" id="iconPicker" data-icons-url="@Url.Content("~/lib/bootstrap-icons/font/bootstrap-icons.json")">
+            <label for="iconSearch" class="fw-label">Icon <span class="fw-muted" id="iconLabel">@current</span></label>
+            <input type="hidden" id="Icon" name="Icon" value="@current" />
+            <input type="search" id="iconSearch" class="form-control" placeholder="Search icons (e.g. cart, pizza, bank)" autocomplete="off" />
+            <div class="fw-icon-grid fw-icon-scroll" id="iconGrid" role="group" aria-label="Icons"></div>
+            <div class="fw-muted"><span id="iconCount"></span> <button type="button" id="iconMore" class="btn btn-secondary fw-btn-sm">Show more</button></div>
+            <span asp-validation-for="Icon" class="fw-error"></span>
+        </div>
+
+        <div class="fw-form-actions">
+            <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Save category")</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

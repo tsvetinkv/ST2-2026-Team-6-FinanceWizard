@@ -1,0 +1,58 @@
+@model Tag
+@{
+    bool isEdit = ViewData["TagId"] != null;
+    long? tagId = isEdit ? Convert.ToInt64(ViewData["TagId"]) : null;
+
+    var colorValue = Colors.Normalize(Model.Color) ?? "#1d4ed8";
+    var iconValue = (Model.Icon ?? string.Empty).Trim();
+    bool hasIcon = iconValue.Length > 0;
+}
+
+<div class="fw-panel fw-form-card is-wide">
+    <h1 class="fw-page-title fw-form-title">@(isEdit ? "Edit tag" : "Add tag")</h1>
+    <p class="fw-muted fw-form-sub">Short labels such as Essential, Monthly or Holiday. Choose a color, and an icon if you want one.</p>
+
+    <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@tagId" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
+
+        <div class="fw-item-card fw-preview" aria-hidden="true">
+            <span class="fw-avatar has-color" data-color-preview style="@Colors.Style(colorValue, Model.Name)">
+                <i class="bi bi-@iconValue fw-bi" data-icon-preview hidden="@(!hasIcon)"></i>
+                <span class="fw-avatar-hash" data-hash-preview hidden="@hasIcon">#</span>
+            </span>
+            <div class="fw-item-name" data-name-preview data-empty="Tag name">@(string.IsNullOrWhiteSpace(Model.Name) ? "Tag name" : "#" + Model.Name.Trim().TrimStart('#'))</div>
+        </div>
+
+        <div class="fw-form-group">
+            <label asp-for="Name" class="fw-label"></label>
+            <div class="input-group">
+                <span class="input-group-text" aria-hidden="true">#</span>
+                <input asp-for="Name" class="form-control" placeholder="e.g. holiday" maxlength="50" autofocus data-name-source />
+            </div>
+            <span asp-validation-for="Name" class="fw-error"></span>
+        </div>
+
+        <div class="fw-form-group">
+            <label for="ColorHex" class="fw-label">Color <span class="fw-muted">(required)</span></label>
+            <div class="fw-color-row">
+                <input type="color" id="Color" name="Color" class="fw-color-input" value="@colorValue" aria-label="Pick a color" />
+                <input type="text" id="ColorHex" class="form-control fw-color-hex" value="@colorValue" maxlength="7" autocomplete="off" aria-label="Color hex code" />
+            </div>
+            <span asp-validation-for="Color" class="fw-error"></span>
+        </div>
+
+        <div class="fw-form-group" id="iconPicker" data-icons-url="@Url.Content("~/lib/bootstrap-icons/font/bootstrap-icons.json")" data-optional="true">
+            <label for="iconSearch" class="fw-label">Icon <span class="fw-muted" id="iconLabel">@(hasIcon ? iconValue : "none")</span> <span class="fw-muted">(optional)</span></label>
+            <input type="hidden" id="Icon" name="Icon" value="@iconValue" />
+            <input type="search" id="iconSearch" class="form-control" placeholder="Search icons (e.g. plane, cart, house)" autocomplete="off" />
+            <div class="fw-icon-grid fw-icon-scroll" id="iconGrid" role="group" aria-label="Icons"></div>
+            <div class="fw-muted"><span id="iconCount"></span> <button type="button" id="iconMore" class="btn btn-secondary fw-btn-sm">Show more</button></div>
+            <span asp-validation-for="Icon" class="fw-error"></span>
+        </div>
+
+        <div class="fw-form-actions">
+            <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Save tag")</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

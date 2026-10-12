@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
 namespace ST2_2026_Team_6_FinanceWizard.Repositories;
@@ -60,8 +60,8 @@ public static class DbInitializer
             if (!await context.Wallets.AnyAsync())
             {
                 await context.Wallets.AddRangeAsync(
-                    new Wallet { Name = "Main Account", Balance = 2500.00m, Currency = "BGN", UserId = defaultUser.Id },
-                    new Wallet { Name = "Savings", Balance = 1200.00m, Currency = "BGN", UserId = defaultUser.Id }
+                    new Wallet { Name = "Main Account", Type = WalletTypes.Spending, Balance = 2500.00m, Currency = "EUR", UserId = defaultUser.Id },
+                    new Wallet { Name = "Savings", Type = WalletTypes.Savings, Balance = 1200.00m, Currency = "EUR", UserId = defaultUser.Id }
                 );
                 await context.SaveChangesAsync();
             }

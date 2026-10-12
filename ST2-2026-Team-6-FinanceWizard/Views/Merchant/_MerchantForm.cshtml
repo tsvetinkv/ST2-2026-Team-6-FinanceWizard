@@ -1,0 +1,69 @@
+@model MerchantFormViewModel
+@{
+    bool isEdit = ViewData["MerchantId"] != null;
+    long? merchantId = isEdit ? Convert.ToInt64(ViewData["MerchantId"]) : null;
+
+    string previewName = (Model.Name ?? string.Empty).Trim();
+    string initial = previewName.Length > 0 ? previewName.Substring(0, 1).ToUpperInvariant() : "?";
+    bool hasCurrentLogo = !string.IsNullOrWhiteSpace(Model.CurrentLogoUrl);
+}
+
+<div class="fw-panel fw-form-card">
+    <h1 class="fw-page-title fw-form-title">@(isEdit ? "Edit merchant" : "Add merchant")</h1>
+    <p class="fw-muted fw-form-sub">@(isEdit ? "Change the name or the logo." : "A shop, service or person you pay or get paid by.")</p>
+
+    <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@merchantId" method="post" enctype="multipart/form-data" novalidate>
+        <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
+
+        <div class="fw-item-card fw-preview" aria-hidden="true">
+            @if (hasCurrentLogo)
+            {
+                <span class="fw-avatar fw-avatar-logo" data-logo-preview><img src="@Url.Content("~/" + Model.CurrentLogoUrl)" alt="" /></span>
+            }
+            else
+            {
+                <span class="fw-avatar" data-logo-preview data-auto-hue style="--h:@Hue.Of(previewName)"><span data-initial-preview>@initial</span></span>
+            }
+            <div class="fw-item-name" data-name-preview data-empty="Merchant name">@(previewName.Length > 0 ? previewName : "Merchant name")</div>
+        </div>
+
+        <div class="fw-form-group">
+            <label asp-for="Name" class="fw-label"></label>
+            <input asp-for="Name" class="form-control" placeholder="e.g. Lidl, Netflix" maxlength="100" autofocus data-name-source />
+            <span asp-validation-for="Name" class="fw-error"></span>
+        </div>
+
+        <fieldset class="fw-form-group">
+            <legend class="fw-label">Logo (optional)</legend>
+            <div class="fw-hint mb-2">Upload a photo <strong>or</strong> paste the web link of an image. Use only one of them.</div>
+
+            <div class="fw-form-group">
+                <label for="Logo" class="fw-label">Upload a photo</label>
+                <input type="file" id="Logo" name="Logo" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" />
+                <span id="logoError" class="fw-error"></span>
+                @Html.ValidationMessage("Logo", new { @class = "fw-error" })
+            </div>
+
+            <div class="fw-form-group">
+                <label for="ImageLink" class="fw-label">Or an image link</label>
+                <input asp-for="ImageLink" type="url" id="ImageLink" class="form-control" placeholder="https://example.com/logo.png" maxlength="2000" autocomplete="off" />
+                <span asp-validation-for="ImageLink" class="fw-error"></span>
+            </div>
+
+            @if (hasCurrentLogo)
+            {
+                <label class="fw-check">
+                    <input type="checkbox" asp-for="RemoveLogo" />
+                    Remove the current logo
+                </label>
+            }
+
+            <div class="fw-hint">PNG, JPG, GIF or WebP, up to 2 MB. If you leave both empty, @(hasCurrentLogo ? "the current logo is kept." : "the merchant gets the initial letter instead.")</div>
+        </fieldset>
+
+        <div class="fw-form-actions">
+            <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Save merchant")</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
