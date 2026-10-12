@@ -1392,6 +1392,648 @@ html[data-bs-theme="dark"] .fw-panel {
     }
 }
 
+/* ---------- 9c. Wallets, merchants, categories, tags, dashboard ------------
+   Uses the same tokens as the rest of the app, so light / dark just works.
+   Per-item colours come from --h (hue 0-359) set inline by the views.
+   ---------------------------------------------------------------------------- */
+.fw-ico {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+}
+
+.fw-page-sub {
+    margin: 0.15rem 0 0;
+    font-size: 0.9rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-count-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    vertical-align: middle;
+    color: var(--fw-text-muted);
+    background: var(--fw-surface-2);
+    border: 1px solid var(--fw-border);
+}
+
+/* Card grid */
+.fw-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.fw-item-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    margin: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+    .fw-item-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--fw-input-border);
+        box-shadow: var(--fw-shadow-sm);
+    }
+
+.fw-item-name {
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: normal;
+}
+
+.fw-item-meta {
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+/* Coloured avatar / icon tile (hue-based, readable in both themes) */
+.fw-avatar {
+    --h: 220;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    background: hsl(var(--h) 80% 92%);
+    color: hsl(var(--h) 65% 26%);
+    border: 1px solid hsl(var(--h) 55% 78%);
+}
+
+    .fw-avatar .fw-ico {
+        width: 1.35rem;
+        height: 1.35rem;
+    }
+
+html[data-bs-theme="dark"] .fw-avatar {
+    background: hsl(var(--h) 40% 22%);
+    color: hsl(var(--h) 85% 85%);
+    border-color: hsl(var(--h) 40% 36%);
+}
+
+/* Tag pills */
+.fw-tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.fw-tag {
+    --h: 220;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.3;
+    background: hsl(var(--h) 80% 92%);
+    color: hsl(var(--h) 65% 26%);
+    border: 1px solid hsl(var(--h) 55% 78%);
+}
+
+    .fw-tag::before {
+        content: "#";
+        opacity: 0.7;
+    }
+
+    .fw-tag.is-sm {
+        padding: 0.05rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+html[data-bs-theme="dark"] .fw-tag {
+    background: hsl(var(--h) 40% 22%);
+    color: hsl(var(--h) 85% 85%);
+    border-color: hsl(var(--h) 40% 36%);
+}
+
+/* Inline label chip (category / merchant / wallet inside table rows) */
+.fw-chip {
+    --h: 220;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--fw-surface-2);
+    color: var(--fw-text);
+    border: 1px solid var(--fw-border);
+}
+
+    .fw-chip .fw-ico {
+        width: 0.9rem;
+        height: 0.9rem;
+        color: hsl(var(--h) 60% 40%);
+    }
+
+html[data-bs-theme="dark"] .fw-chip .fw-ico {
+    color: hsl(var(--h) 85% 75%);
+}
+
+.fw-tx-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.3rem;
+}
+
+.fw-tx-merchant {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+/* Wallet cards */
+.fw-wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.fw-wallet-card {
+    position: relative;
+    margin: 0;
+    padding: 1.1rem 1.2rem 1.15rem;
+    overflow: hidden;
+}
+
+    .fw-wallet-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 4px;
+        background: var(--fw-primary);
+    }
+
+    .fw-wallet-card.is-savings::before {
+        background: var(--fw-gold);
+    }
+
+.fw-wallet-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+}
+
+.fw-wallet-name {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.fw-wallet-balance {
+    font-size: 1.7rem;
+    font-weight: 800;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+}
+
+.fw-wallet-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fw-text-muted);
+}
+
+.fw-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--fw-link);
+    background: color-mix(in srgb, var(--fw-primary) 12%, var(--fw-surface));
+    border: 1px solid color-mix(in srgb, var(--fw-primary) 40%, var(--fw-surface));
+}
+
+    .fw-type-badge .fw-ico {
+        width: 0.85rem;
+        height: 0.85rem;
+    }
+
+    .fw-type-badge.is-savings {
+        color: var(--fw-gold-text);
+        background: color-mix(in srgb, var(--fw-gold) 22%, var(--fw-surface));
+        border-color: color-mix(in srgb, var(--fw-gold) 70%, var(--fw-surface));
+    }
+
+/* Summary strip with several wallets */
+.fw-summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 2.5rem;
+    align-items: flex-end;
+}
+
+.fw-summary-sub {
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+/* Form: wide card + choice cards, chips, icon picker */
+.fw-form-card.is-wide {
+    max-width: 44rem;
+}
+
+.fw-form-section {
+    margin: 1.4rem 0 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--fw-border);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fw-text-muted);
+}
+
+.fw-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+}
+
+@media (max-width: 575.98px) {
+    .fw-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.fw-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.6rem;
+}
+
+.fw-choice {
+    position: relative;
+}
+
+    .fw-choice input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    .fw-choice label {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        height: 100%;
+        margin: 0;
+        padding: 0.7rem 0.85rem;
+        border: 1px solid var(--fw-input-border);
+        border-radius: 0.65rem;
+        background: var(--fw-surface);
+        color: var(--fw-text);
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .fw-choice label:hover {
+            border-color: var(--fw-primary);
+        }
+
+    .fw-choice input:checked + label {
+        border-color: var(--fw-primary);
+        background: color-mix(in srgb, var(--fw-primary) 12%, var(--fw-surface));
+        box-shadow: 0 0 0 2px var(--fw-primary);
+    }
+
+    .fw-choice input:focus-visible + label {
+        outline: 3px solid var(--fw-focus);
+        outline-offset: 2px;
+    }
+
+.fw-choice-title {
+    display: block;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.fw-choice-sub {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Multi-select chips (tags) */
+.fw-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fw-chip-check {
+    --h: 220;
+    position: relative;
+}
+
+    .fw-chip-check input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    .fw-chip-check label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin: 0;
+        padding: 0.3rem 0.8rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--fw-text);
+        background: var(--fw-surface);
+        border: 1px solid var(--fw-input-border);
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+        .fw-chip-check label::before {
+            content: "#";
+            opacity: 0.6;
+        }
+
+        .fw-chip-check label:hover {
+            border-color: var(--fw-primary);
+        }
+
+    .fw-chip-check input:checked + label {
+        background: var(--fw-primary);
+        border-color: var(--fw-primary);
+        color: var(--fw-on-primary);
+    }
+
+        .fw-chip-check input:checked + label::before {
+            content: "\2713";
+            opacity: 1;
+        }
+
+    .fw-chip-check input:focus-visible + label {
+        outline: 3px solid var(--fw-focus);
+        outline-offset: 2px;
+    }
+
+.fw-inline-empty {
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--fw-border);
+    border-radius: 0.65rem;
+    font-size: 0.9rem;
+    color: var(--fw-text-muted);
+}
+
+/* Category icon picker */
+.fw-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.4rem, 1fr));
+    gap: 0.5rem;
+}
+
+.fw-icon-tile {
+    position: relative;
+}
+
+    .fw-icon-tile input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    .fw-icon-tile label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 3.4rem;
+        margin: 0;
+        border-radius: 0.65rem;
+        border: 1px solid var(--fw-input-border);
+        background: var(--fw-surface);
+        color: var(--fw-text-muted);
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    }
+
+        .fw-icon-tile label:hover {
+            border-color: var(--fw-primary);
+            color: var(--fw-text);
+        }
+
+        .fw-icon-tile label .fw-ico {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+    .fw-icon-tile input:checked + label {
+        border-color: var(--fw-primary);
+        background: color-mix(in srgb, var(--fw-primary) 14%, var(--fw-surface));
+        color: var(--fw-link);
+        box-shadow: 0 0 0 2px var(--fw-primary);
+    }
+
+    .fw-icon-tile input:focus-visible + label {
+        outline: 3px solid var(--fw-focus);
+        outline-offset: 2px;
+    }
+
+/* Live preview in create forms */
+.fw-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    margin-top: 0.5rem;
+    border-radius: 0.65rem;
+    background: var(--fw-surface-2);
+    border: 1px solid var(--fw-border);
+}
+
+/* Dashboard (home after sign-in) */
+.fw-hero-compact {
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    margin-bottom: 1.5rem;
+}
+
+.fw-headline-sm {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.fw-balance-card {
+    padding: 1.25rem 1.4rem;
+}
+
+.fw-balance-lines {
+    margin: 0.25rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+    .fw-balance-lines li {
+        font-size: clamp(1.5rem, 3.5vw, 2rem);
+        font-weight: 800;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+    }
+
+.fw-section-label {
+    margin: 0 0 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fw-text-muted);
+}
+
+.fw-tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1.75rem;
+}
+
+.fw-tile {
+    --h: 220;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1rem 1.05rem 1.05rem;
+    border-radius: 0.9rem;
+    background: var(--fw-surface);
+    border: 1px solid var(--fw-border);
+    box-shadow: 0 1px 2px rgba(15, 42, 107, 0.06);
+    color: var(--fw-text);
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+    .fw-tile:hover,
+    .fw-tile:focus-visible {
+        color: var(--fw-text);
+        transform: translateY(-3px);
+        border-color: var(--fw-primary);
+        box-shadow: var(--fw-shadow-sm);
+    }
+
+    .fw-tile .fw-avatar {
+        margin-bottom: 0.55rem;
+    }
+
+.fw-tile-title {
+    font-weight: 700;
+}
+
+.fw-tile-count {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.fw-tile-desc {
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-tile-arrow {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--fw-text-muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.fw-tile:hover .fw-tile-arrow,
+.fw-tile:focus-visible .fw-tile-arrow {
+    color: var(--fw-primary);
+    transform: translateX(3px);
+}
+
+.fw-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--fw-border);
+}
+
+    .fw-panel-head h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+.fw-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+    .fw-list > li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 1rem;
+        border-bottom: 1px solid var(--fw-border);
+    }
+
+        .fw-list > li:last-child {
+            border-bottom: 0;
+        }
+
+.fw-list-main {
+    min-width: 0;
+}
+
+.fw-list-title {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.fw-list-sub {
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-list-empty {
+    padding: 1.25rem 1rem;
+    color: var(--fw-text-muted);
+}
+
 /* ---------- 10. Motion ------------------------------------------------------ */
 @keyframes fw-grow {
     from {
@@ -1419,4 +2061,389 @@ html[data-bs-theme="dark"] .fw-panel {
         transition: none !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* ---------- 12. Wallet edit link ------------------------------------------- */
+.fw-wallet-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.85rem;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.5rem;
+    background: var(--fw-surface-2);
+    color: var(--fw-text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .fw-wallet-edit:hover,
+    .fw-wallet-edit:focus-visible {
+        border-color: var(--fw-primary);
+        color: var(--fw-link);
+    }
+
+/* 13. Custom colours, library icons, merchant logos, pickers */
+.fw-bi {
+    font-size: 1.35rem;
+    line-height: 1;
+    color: hsl(var(--h) 65% 26%);
+}
+
+.fw-chip .fw-bi {
+    font-size: 0.9rem;
+    color: hsl(var(--h) 60% 40%);
+}
+
+html[data-bs-theme="dark"] .fw-bi {
+    color: hsl(var(--h) 85% 85%);
+}
+
+html[data-bs-theme="dark"] .fw-chip .fw-bi {
+    color: hsl(var(--h) 85% 75%);
+}
+
+/* Custom colour: a light tint of the colour with a visible coloured border, like the built-in items */
+html[data-bs-theme] .fw-avatar.has-color,
+html[data-bs-theme] .fw-tag.has-color {
+    background: color-mix(in srgb, var(--c) 18%, var(--fw-surface));
+    color: var(--fw-text);
+    border: 1px solid var(--c);
+}
+
+    html[data-bs-theme] .fw-avatar.has-color .fw-bi,
+    html[data-bs-theme] .fw-avatar.has-color .fw-ico,
+    html[data-bs-theme] .fw-tag.has-color .fw-bi,
+    html[data-bs-theme] .fw-tag.has-color .fw-ico {
+        color: color-mix(in srgb, var(--c) 70%, var(--fw-text));
+    }
+
+.fw-chip-ico {
+    display: inline-flex;
+    align-items: center;
+}
+
+html[data-bs-theme] .fw-chip.has-color .fw-chip-ico {
+    background: var(--c);
+    border-radius: 0.35rem;
+    padding: 0.15rem;
+}
+
+    html[data-bs-theme] .fw-chip.has-color .fw-chip-ico .fw-bi,
+    html[data-bs-theme] .fw-chip.has-color .fw-chip-ico .fw-ico {
+        color: var(--on);
+    }
+
+html[data-bs-theme] .fw-avatar.fw-avatar-logo {
+    background: #fff;
+    padding: 0.3rem;
+    overflow: hidden;
+}
+
+    html[data-bs-theme] .fw-avatar.fw-avatar-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    html[data-bs-theme] .fw-avatar.fw-avatar-logo.has-color {
+        background: #fff;
+        border: 2px solid var(--c);
+    }
+
+.fw-preview {
+    margin-bottom: 1rem;
+}
+
+.fw-color-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fw-color-input {
+    width: 3rem;
+    height: 2.5rem;
+    padding: 0.15rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.5rem;
+    background: var(--fw-surface-2);
+    cursor: pointer;
+}
+
+.fw-color-hex {
+    max-width: 8rem;
+    font-family: ui-monospace, monospace;
+}
+
+.fw-icon-scroll {
+    max-height: 15rem;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.6rem;
+}
+
+.fw-pick {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 3rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.6rem;
+    background: var(--fw-surface-2);
+    color: var(--fw-text);
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+    .fw-pick:hover {
+        border-color: var(--fw-primary);
+    }
+
+    .fw-pick[aria-pressed="true"] {
+        border-color: var(--fw-primary);
+        box-shadow: 0 0 0 2px var(--fw-primary);
+    }
+
+    .fw-pick:focus-visible {
+        outline: 2px solid var(--fw-primary);
+        outline-offset: 2px;
+    }
+
+/* ---------- 14. Edit / delete actions, currency blocks, tag and form details ---- */
+.fw-item-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fw-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+    flex: none;
+}
+
+.fw-item-actions form,
+.fw-tx-actions form,
+.fw-inline-form {
+    margin: 0;
+}
+
+a.fw-icon-btn {
+    text-decoration: none;
+}
+
+.fw-icon-btn:hover,
+.fw-icon-btn:focus-visible {
+    color: var(--fw-link);
+    background: var(--fw-surface-2);
+    border-color: var(--fw-border);
+}
+
+.fw-icon-btn.is-danger:hover,
+.fw-icon-btn.is-danger:focus-visible {
+    color: var(--fw-expense);
+}
+
+.fw-tx-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Wallet card buttons */
+.fw-card-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+}
+
+    .fw-card-actions .fw-wallet-edit {
+        margin-top: 0;
+    }
+
+.fw-wallet-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.5rem;
+    background: var(--fw-surface-2);
+    color: var(--fw-text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .fw-wallet-delete:hover,
+    .fw-wallet-delete:focus-visible {
+        color: var(--fw-expense);
+        border-color: color-mix(in srgb, var(--fw-expense) 50%, var(--fw-surface));
+    }
+
+.btn.fw-btn-danger {
+    --fw-btn-color: #ffffff;
+    color: #ffffff;
+    background-color: var(--fw-expense-solid);
+    border-color: var(--fw-expense-solid);
+}
+
+    .btn.fw-btn-danger:hover,
+    .btn.fw-btn-danger:focus {
+        color: #ffffff;
+        background-color: color-mix(in srgb, var(--fw-expense-solid) 85%, #000);
+        border-color: color-mix(in srgb, var(--fw-expense-solid) 85%, #000);
+    }
+
+.fw-danger-zone {
+    padding: 1rem 1.25rem;
+    border-color: color-mix(in srgb, var(--fw-expense) 45%, var(--fw-surface));
+}
+
+    .fw-danger-zone h2 {
+        margin: 0 0 0.25rem;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .fw-danger-zone p {
+        margin: 0 0 0.75rem;
+        font-size: 0.9rem;
+        color: var(--fw-text-muted);
+    }
+
+/* Currency blocks: totals and wallets are shown per currency */
+.fw-currency-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.fw-currency-tile {
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.6rem;
+    background: var(--fw-surface-2);
+}
+
+.fw-currency-code {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fw-text-muted);
+}
+
+.fw-wallet-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+}
+
+.fw-currency-section {
+    margin-bottom: 1.25rem;
+}
+
+.fw-currency-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--fw-border);
+}
+
+    .fw-currency-head h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+/* Tags: custom colour and optional icon */
+.fw-tag.has-icon::before {
+    content: none;
+}
+
+.fw-tag .fw-ico,
+.fw-tag .fw-bi {
+    width: 0.85rem;
+    height: 0.85rem;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.fw-chip-check.has-color label {
+    background: color-mix(in srgb, var(--c) 18%, var(--fw-surface));
+    border-color: var(--c);
+    color: var(--fw-text);
+}
+
+.fw-chip-check.has-color input:checked + label {
+    background: var(--c);
+    border-color: var(--c);
+    color: var(--on);
+}
+
+.fw-chip-check.has-icon label::before,
+.fw-chip-check.has-icon input:checked + label::before {
+    content: none;
+}
+
+.fw-chip-check label .fw-ico,
+.fw-chip-check label .fw-bi {
+    width: 0.95rem;
+    height: 0.95rem;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.fw-avatar-hash {
+    font-weight: 800;
+}
+
+/* Form details */
+.fw-sublabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.fw-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.fw-pick.fw-pick-none {
+    height: auto;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    grid-column: 1 / -1;
+}
+
+.fw-icon-grid .fw-pick-none {
+    justify-self: start;
+}
+
+/* Dark theme: icons of selected (coloured) tags in the transaction form are black */
+html[data-bs-theme="dark"] .fw-chip-check.has-color input:checked + label .fw-bi,
+html[data-bs-theme="dark"] .fw-chip-check.has-color input:checked + label .fw-ico {
+    color: #000000;
 }
