@@ -1,4 +1,6 @@
-﻿namespace ST2_2026_Team_6_FinanceWizard.Services.Builders
+using Microsoft.EntityFrameworkCore;
+
+namespace ST2_2026_Team_6_FinanceWizard.Services.Builders
 {
     public class TransactionQueryBuilder
     {
@@ -36,6 +38,17 @@
                 var term = keyword.Trim().ToLower();
                 _query = _query.Where(t => t.Description != null && t.Description.ToLower().Contains(term));
             }
+            return this;
+        }
+
+        // Loads wallet, merchant, category and tags for the list page
+        public TransactionQueryBuilder IncludeDetails()
+        {
+            _query = _query
+                .Include(t => t.Wallet)
+                .Include(t => t.Merchant)
+                .Include(t => t.Category)
+                .Include(t => t.TransactionTags).ThenInclude(tt => tt.Tag);
             return this;
         }
 
