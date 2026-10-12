@@ -1391,7 +1391,6 @@ html[data-bs-theme="dark"] .fw-panel {
         padding-right: 0.75rem;
     }
 }
-
 /* ---------- 9c. Wallets, merchants, categories, tags, dashboard ------------
    Uses the same tokens as the rest of the app, so light / dark just works.
    Per-item colours come from --h (hue 0-359) set inline by the views.
@@ -1438,11 +1437,18 @@ html[data-bs-theme="dark"] .fw-panel {
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-    .fw-item-card:hover {
-        transform: translateY(-2px);
-        border-color: var(--fw-input-border);
-        box-shadow: var(--fw-shadow-sm);
+.fw-item-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--fw-input-border);
+    box-shadow: var(--fw-shadow-sm);
+}
+
+/* ---------- 10. Motion ------------------------------------------------------ */
+@keyframes fw-grow {
+    from {
+        transform: scaleY(0);
     }
+}
 
 .fw-item-name {
     font-weight: 700;
