@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
@@ -20,5 +22,26 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
 
         [Display(Name = "Date")]
         public DateTime Date { get; set; } = DateTime.Now;
+
+        // --- Single choices ---
+        [Required(ErrorMessage = "Please choose a wallet.")]
+        [Display(Name = "Wallet")]
+        public long? WalletId { get; set; }
+
+        [Display(Name = "Merchant")]
+        public long? MerchantId { get; set; }
+
+        [Display(Name = "Category")]
+        public long? CategoryId { get; set; }
+
+        // --- Multiple choice ---
+        [Display(Name = "Tags")]
+        public List<long> TagIds { get; set; } = new();
+
+        // --- Options for the form (filled by the controller, never posted) ---
+        [ValidateNever] public List<Wallet> Wallets { get; set; } = new();
+        [ValidateNever] public List<Merchant> Merchants { get; set; } = new();
+        [ValidateNever] public List<Category> Categories { get; set; } = new();
+        [ValidateNever] public List<Tag> Tags { get; set; } = new();
     }
 }

@@ -1,4 +1,4 @@
-﻿using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
+using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
@@ -11,8 +11,8 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
         public DateTime? ToDate { get; set; }
         public string? SearchTerm { get; set; }
 
-        // The user's wallet
-        public Wallet? Wallet { get; set; }
+        // The user's wallets (spending / savings)
+        public List<Wallet> Wallets { get; set; } = new();
 
         // Pagination
         public int CurrentPage { get; set; } = 1;
