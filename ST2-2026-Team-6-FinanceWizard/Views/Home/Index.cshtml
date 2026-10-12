@@ -1,3 +1,4 @@
+@model HomeDashboardViewModel
 @using System.Globalization
 @{
     ViewData["Title"] = "Home";
@@ -23,16 +24,160 @@
 
 @if (isAuthenticated)
 {
-    <section class="fw-hero" aria-labelledby="welcome-heading">
+    var wallets = Model.Wallets;
+    var totals = wallets
+        .GroupBy(w => w.Currency)
+        .Select(g => Money.Format(g.Sum(w => w.Balance), g.Key))
+        .ToList();
+
+    <section class="fw-hero fw-hero-compact" aria-labelledby="welcome-heading">
         <span class="fw-blob fw-blob-blue" aria-hidden="true"></span>
         <span class="fw-blob fw-blob-gold" aria-hidden="true"></span>
-        <h1 id="welcome-heading" class="fw-headline mb-3">Welcome back, <span class="fw-highlight">@User.Identity?.Name</span></h1>
-        <p class="fw-lead mb-4">Your wallet is ready. Review your latest activity or record a new transaction.</p>
-        <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-primary btn-lg" asp-controller="Transactions" asp-action="Index">View transactions</a>
-            <a class="btn btn-outline-fw btn-lg" asp-controller="Transactions" asp-action="Create">New transaction</a>
+
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="fw-eyebrow mb-3">Dashboard</span>
+                <h1 id="welcome-heading" class="fw-headline fw-headline-sm mb-3">Welcome back, <span class="fw-highlight">@User.Identity?.Name</span></h1>
+                <p class="fw-lead mb-4">Review your balance, record a new transaction or manage your wallets, merchants, categories and tags.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-primary btn-lg" asp-controller="Transactions" asp-action="Create">New transaction</a>
+                    <a class="btn btn-outline-fw btn-lg" asp-controller="Transactions" asp-action="Index">View transactions</a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="fw-glass fw-balance-card" role="group" aria-label="Total balance">
+                    <div class="fw-kpi-label">Total balance</div>
+                    @if (totals.Any())
+                    {
+                        <ul class="fw-balance-lines">
+                            @foreach (var total in totals)
+                            {
+                                <li>@total</li>
+                            }
+                        </ul>
+                        <div class="fw-item-meta mt-1">Across @wallets.Count @(wallets.Count == 1 ? "wallet" : "wallets")</div>
+                    }
+                    else
+                    {
+                        <div class="fw-item-meta mt-2">No wallets yet. <a asp-controller="Wallet" asp-action="Create">Create your first wallet</a></div>
+                    }
+                </div>
+            </div>
         </div>
     </section>
+
+    <h2 class="fw-section-label">Manage</h2>
+    <nav class="fw-tile-grid" aria-label="Sections">
+        <a class="fw-tile" style="--h:215" asp-controller="Transactions" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("transactions")" /></span>
+            <span class="fw-tile-title">Transactions</span>
+            <span class="fw-tile-count">@Model.TransactionCount</span>
+            <span class="fw-tile-desc">Income &amp; expenses</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:150" asp-controller="Wallet" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("wallets")" /></span>
+            <span class="fw-tile-title">Wallets</span>
+            <span class="fw-tile-count">@wallets.Count</span>
+            <span class="fw-tile-desc">Spending &amp; savings</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:28" asp-controller="Merchant" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("merchants")" /></span>
+            <span class="fw-tile-title">Merchants</span>
+            <span class="fw-tile-count">@Model.MerchantCount</span>
+            <span class="fw-tile-desc">Shops &amp; services</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:275" asp-controller="Category" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("categories")" /></span>
+            <span class="fw-tile-title">Categories</span>
+            <span class="fw-tile-count">@Model.CategoryCount</span>
+            <span class="fw-tile-desc">Group your spending</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:340" asp-controller="Tag" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("tags")" /></span>
+            <span class="fw-tile-title">Tags</span>
+            <span class="fw-tile-count">@Model.TagCount</span>
+            <span class="fw-tile-desc">Flexible labels</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+    </nav>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-5">
+            <section class="fw-panel h-100" aria-labelledby="home-wallets-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-wallets-h">Your wallets</h2>
+                    <a asp-controller="Wallet" asp-action="Index" class="small">Manage</a>
+                </div>
+                @if (wallets.Any())
+                {
+                    <ul class="fw-list">
+                        @foreach (var w in wallets)
+                        {
+                            bool sv = w.Type == WalletTypes.Savings;
+                            <li>
+                                <div class="fw-list-main">
+                                    <div class="fw-list-title">@w.Name</div>
+                                    <span class="fw-type-badge @(sv ? "is-savings" : "")">
+                                        <partial name="_SectionIcon" model="@(sv ? "savings" : "spending")" />
+                                        @(sv ? "Savings" : "Spending")
+                                    </span>
+                                </div>
+                                <strong class="fw-amount">@Money.Format(w.Balance, w.Currency)</strong>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="fw-list-empty">No wallets yet. <a asp-controller="Wallet" asp-action="Create">Create one</a></div>
+                }
+            </section>
+        </div>
+        <div class="col-lg-7">
+            <section class="fw-panel h-100" aria-labelledby="home-recent-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-recent-h">Recent transactions</h2>
+                    <a asp-controller="Transactions" asp-action="Index" class="small">View all</a>
+                </div>
+                @if (Model.RecentTransactions.Any())
+                {
+                    <ul class="fw-list">
+                        @foreach (var t in Model.RecentTransactions)
+                        {
+                            bool inc = t.Type == "Income";
+                            string title = !string.IsNullOrWhiteSpace(t.Description) ? t.Description : (t.Merchant?.Name ?? "Transaction");
+                            <li>
+                                <div class="fw-list-main">
+                                    <div class="fw-list-title">@title</div>
+                                    <div class="fw-list-sub">
+                                        @t.Date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)
+                                        @if (t.Merchant != null && !string.IsNullOrWhiteSpace(t.Description))
+                                        {
+                                            <text>&middot; @t.Merchant.Name</text>
+                                        }
+                                        @if (t.Category != null)
+                                        {
+                                            <text>&middot; @t.Category.Name</text>
+                                        }
+                                        &middot; @t.Wallet.Name
+                                    </div>
+                                </div>
+                                <span class="fw-amount @(inc ? "is-income" : "is-expense")">@(inc ? "+" : "−")@Money.Format(t.Amount, t.Wallet.Currency)</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="fw-list-empty">Nothing here yet. <a asp-controller="Transactions" asp-action="Create">Record your first transaction</a></div>
+                }
+            </section>
+        </div>
+    </div>
 }
 else
 {

@@ -3,6 +3,7 @@
     var action = ViewContext.RouteData.Values["action"]?.ToString();
     bool IsCurrent(string c, string a) => string.Equals(controller, c, StringComparison.OrdinalIgnoreCase)
                                           && string.Equals(action, a, StringComparison.OrdinalIgnoreCase);
+    bool IsSection(string c) => string.Equals(controller, c, StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
@@ -12,19 +13,19 @@
     <meta name="color-scheme" content="light dark" />
     <title>@ViewData["Title"] - FinanceWizard</title>
 
-    @* Apply the saved/preferred theme before first paint to avoid a flash *@
     <script>
-            (function () {
-                var theme = null;
-                try { theme = localStorage.getItem('fw-theme'); } catch (e) { }
-                if (theme !== 'light' && theme !== 'dark') {
-                    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                }
-                document.documentElement.setAttribute('data-bs-theme', theme);
-            })();
+        (function () {
+            var theme = null;
+            try { theme = localStorage.getItem('fw-theme'); } catch (e) { }
+            if (theme !== 'light' && theme !== 'dark') {
+                theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
     </script>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -33,7 +34,7 @@
     <header>
         <nav class="navbar navbar-expand-md navbar-dark fw-navbar mb-4" data-bs-theme="dark" aria-label="Main navigation">
             <div class="container">
-                <a class="navbar-brand" asp-controller="@((User.Identity?.IsAuthenticated ?? false) ? "Transactions" : "Home")" asp-action="Index">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
                     <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
                         <rect width="32" height="32" rx="8" fill="#f2c75c" />
                         <path d="M7 22l6-7 5 4 7-9" fill="none" stroke="#0f2a6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
@@ -50,14 +51,34 @@
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <a class="nav-link @(IsCurrent("Transactions", "Index") ? "active" : "")"
-                                   aria-current="@(IsCurrent("Transactions", "Index") ? "page" : null)"
+                                <a class="nav-link @(IsCurrent("Home", "Index") ? "active" : "")"
+                                   aria-current="@(IsCurrent("Home", "Index") ? "page" : null)"
+                                   asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(IsSection("Transactions") ? "active" : "")"
+                                   aria-current="@(IsSection("Transactions") ? "page" : null)"
                                    asp-controller="Transactions" asp-action="Index">Transactions</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link @(IsCurrent("Transactions", "Create") ? "active" : "")"
-                                   aria-current="@(IsCurrent("Transactions", "Create") ? "page" : null)"
-                                   asp-controller="Transactions" asp-action="Create">New transaction</a>
+                                <a class="nav-link @(IsSection("Wallet") ? "active" : "")"
+                                   aria-current="@(IsSection("Wallet") ? "page" : null)"
+                                   asp-controller="Wallet" asp-action="Index">Wallets</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(IsSection("Category") ? "active" : "")"
+                                   aria-current="@(IsSection("Category") ? "page" : null)"
+                                   asp-controller="Category" asp-action="Index">Categories</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(IsSection("Merchant") ? "active" : "")"
+                                   aria-current="@(IsSection("Merchant") ? "page" : null)"
+                                   asp-controller="Merchant" asp-action="Index">Merchants</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(IsSection("Tag") ? "active" : "")"
+                                   aria-current="@(IsSection("Tag") ? "page" : null)"
+                                   asp-controller="Tag" asp-action="Index">Tags</a>
                             </li>
                         }
                     </ul>
@@ -136,30 +157,30 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-            (function () {
-                var root = document.documentElement;
-                var btn = document.getElementById('themeToggle');
-                if (!btn) return;
+        (function () {
+            var root = document.documentElement;
+            var btn = document.getElementById('themeToggle');
+            if (!btn) return;
 
-                function syncLabel() {
-                    var isDark = root.getAttribute('data-bs-theme') === 'dark';
-                    var text = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-                    btn.setAttribute('aria-label', text);
-                    btn.setAttribute('title', text);
-                }
+            function syncLabel() {
+                var isDark = root.getAttribute('data-bs-theme') === 'dark';
+                var text = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+                btn.setAttribute('aria-label', text);
+                btn.setAttribute('title', text);
+            }
 
+            syncLabel();
+
+            btn.addEventListener('click', function () {
+                var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                root.classList.add('fw-theme-anim');
+                root.setAttribute('data-bs-theme', next);
+                try { localStorage.setItem('fw-theme', next); } catch (e) { }
                 syncLabel();
-
-                btn.addEventListener('click', function () {
-                    var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-                    root.classList.add('fw-theme-anim');
-                    root.setAttribute('data-bs-theme', next);
-                    try { localStorage.setItem('fw-theme', next); } catch (e) { }
-                    syncLabel();
-                    window.setTimeout(function () { root.classList.remove('fw-theme-anim'); }, 450);
-                });
-            })();
+                window.setTimeout(function () { root.classList.remove('fw-theme-anim'); }, 450);
+            });
+        })();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-</html>
+</html>

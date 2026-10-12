@@ -4,7 +4,6 @@
     ViewData["Title"] = "Transactions";
 
     var inv = CultureInfo.InvariantCulture;
-    var currency = Model.Wallet?.Currency ?? "€";
     var term = string.IsNullOrWhiteSpace(Model.SearchTerm) ? null : Model.SearchTerm;
     var fromStr = Model.FromDate?.ToString("yyyy-MM-dd", inv);
     var toStr = Model.ToDate?.ToString("yyyy-MM-dd", inv);
@@ -25,17 +24,36 @@
 </div>
 
 <section class="fw-panel fw-summary" aria-label="Wallet summary">
-    <div>
-        <div class="fw-summary-label">Wallet balance</div>
-        @if (Model.Wallet != null)
-        {
-            <div class="fw-summary-value">@(currency)@(Model.Wallet.Balance.ToString("N2", inv))</div>
-        }
-        else
-        {
-            <div class="fw-summary-value fw-summary-empty">Not available</div>
-        }
-    </div>
+    @if (Model.Wallets.Any())
+    {
+        <div class="fw-summary-label">Total balance</div>
+        <div class="fw-currency-tiles">
+            @foreach (var group in Model.Wallets.GroupBy(w => w.Currency).OrderBy(g => g.Key))
+            {
+                <div class="fw-currency-tile">
+                    <div class="fw-currency-code">@group.Key</div>
+                    <div class="fw-summary-value">@Money.Format(group.Sum(w => w.Balance), group.Key)</div>
+                    <ul class="fw-wallet-chips" aria-label="@group.Key wallets">
+                        @foreach (var w in group)
+                        {
+                            bool sv = w.Type == WalletTypes.Savings;
+                            <li class="fw-type-badge @(sv ? "is-savings" : "")" title="@w.Name">
+                                <partial name="_SectionIcon" model="@(sv ? "savings" : "spending")" />
+                                @w.Name: @Money.Format(w.Balance, w.Currency)
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="fw-summary-label">Total balance</div>
+        <div class="fw-summary-value fw-summary-empty">
+            No wallets yet. <a asp-controller="Wallet" asp-action="Create">Create one</a>
+        </div>
+    }
 </section>
 
 <form method="get" asp-action="Index" class="fw-panel fw-filter" role="search" aria-label="Filter transactions">
@@ -68,7 +86,9 @@
                 <thead>
                     <tr>
                         <th scope="col">Date</th>
-                        <th scope="col">Description</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Wallet</th>
                         <th scope="col">Type</th>
                         <th scope="col" class="text-end">Amount</th>
                         <th scope="col" class="fw-col-actions"><span class="visually-hidden">Actions</span></th>
@@ -78,6 +98,8 @@
                     @foreach (var t in Model.Transactions)
                     {
                         bool isIncome = t.Type == "Income";
+                        string money = Money.Format(t.Amount, t.Wallet?.Currency);
+                        bool walletIsSavings = t.Wallet?.Type == WalletTypes.Savings;
                         <tr>
                             <td class="fw-col-date">
                                 <span class="fw-date-main">@t.Date.ToString("dd MMM yyyy", inv)</span>
@@ -91,6 +113,47 @@
                                 else
                                 {
                                     @t.Description
+                                }
+                                @if (t.Merchant != null)
+                                {
+                                    <span class="fw-tx-merchant">@t.Merchant.Name</span>
+                                }
+                                @if (t.TransactionTags.Any())
+                                {
+                                    <div class="fw-tx-tags">
+                                        @foreach (var tt in t.TransactionTags.OrderBy(x => x.Tag.Name))
+                                        {
+                                            <span class="fw-tag is-sm @Colors.Class(tt.Tag.Color) @(string.IsNullOrEmpty(tt.Tag.Icon) ? "" : "has-icon")" style="@Colors.Style(tt.Tag.Color, tt.Tag.Name)">
+                                                @if (!string.IsNullOrEmpty(tt.Tag.Icon))
+                                                {
+                                                    <partial name="_CategoryIcon" model="tt.Tag.Icon" />
+                                                }
+                                                @tt.Tag.Name
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                @if (t.Category != null)
+                                {
+                                    <span class="fw-chip @Colors.Class(t.Category.Color)" style="@Colors.Style(t.Category.Color, t.Category.Name)">
+                                        <span class="fw-chip-ico"><partial name="_CategoryIcon" model="t.Category.Icon" /></span>
+                                        @t.Category.Name
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="fw-muted">&mdash;</span>
+                                }
+                            </td>
+                            <td>
+                                @if (t.Wallet != null)
+                                {
+                                    <span class="fw-chip" style="--h:@(walletIsSavings ? 42 : 215)">
+                                        <partial name="_SectionIcon" model="@(walletIsSavings ? "savings" : "spending")" />
+                                        @t.Wallet.Name
+                                    </span>
                                 }
                             </td>
                             <td>
@@ -107,18 +170,24 @@
                                 </span>
                             </td>
                             <td class="text-end">
-                                <span class="fw-amount @(isIncome ? "is-income" : "is-expense")">@(isIncome ? "+" : "−")@(currency)@(t.Amount.ToString("N2", inv))</span>
+                                <span class="fw-amount @(isIncome ? "is-income" : "is-expense")">@(isIncome ? "+" : "−")@money</span>
                             </td>
                             <td class="fw-col-actions">
-                                <form asp-action="Delete" asp-route-id="@t.Id" method="post"
-                                      onsubmit="return confirm('Delete this transaction? Your wallet balance will be updated.');">
-                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
-                                    <button type="submit" class="fw-icon-btn is-danger"
-                                            title="Delete transaction"
-                                            aria-label="Delete @(isIncome ? "income" : "expense") of @(currency)@(t.Amount.ToString("N2", inv)) from @t.Date.ToString("dd MMM yyyy", inv)">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6" /></svg>
-                                    </button>
-                                </form>
+                                <div class="fw-tx-actions">
+                                    <a asp-action="Edit" asp-route-id="@t.Id" class="fw-icon-btn" title="Edit transaction"
+                                       aria-label="Edit @(isIncome ? "income" : "expense") of @money from @t.Date.ToString("dd MMM yyyy", inv)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@t.Id" method="post"
+                                          onsubmit="return confirm('Delete this transaction? Your wallet balance will be updated.');">
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button type="submit" class="fw-icon-btn is-danger"
+                                                title="Delete transaction"
+                                                aria-label="Delete @(isIncome ? "income" : "expense") of @money from @t.Date.ToString("dd MMM yyyy", inv)">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6" /></svg>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }

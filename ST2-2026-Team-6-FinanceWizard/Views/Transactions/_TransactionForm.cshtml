@@ -1,0 +1,171 @@
+@model ST2_2026_Team_6_FinanceWizard.Models.TransactionCreateViewModel
+@{
+    bool isEdit = ViewData["TransactionId"] != null;
+    long? transactionId = isEdit ? Convert.ToInt64(ViewData["TransactionId"]) : null;
+
+    var selectedWallet = Model.Wallets.FirstOrDefault(w => w.Id == Model.WalletId);
+    var symbol = Money.Symbol(selectedWallet?.Currency);
+}
+
+<div class="fw-panel fw-form-card is-wide">
+    <h1 class="fw-page-title fw-form-title">@(isEdit ? "Edit transaction" : "Add transaction")</h1>
+    <p class="fw-muted fw-form-sub">
+        @(isEdit
+            ? "Change any detail. The wallet balances are adjusted automatically."
+            : "Record an income or an expense and describe it with a wallet, merchant, category and tags.")
+    </p>
+
+    @if (!Model.Wallets.Any())
+    {
+        <div class="fw-inline-empty">
+            You need a wallet before you can add a transaction.
+            <a asp-controller="Wallet" asp-action="Create">Create a wallet</a>
+        </div>
+    }
+    else
+    {
+        <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@transactionId" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
+
+            <fieldset class="fw-form-group">
+                <legend class="fw-label">Type</legend>
+                <div class="fw-segment">
+                    <div>
+                        <input type="radio" asp-for="Type" value="Expense" id="type-expense" />
+                        <label for="type-expense" class="is-expense">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M19 12l-7 7-7-7" /></svg>
+                            Expense
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" asp-for="Type" value="Income" id="type-income" />
+                        <label for="type-income" class="is-income">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+                            Income
+                        </label>
+                    </div>
+                </div>
+                <span asp-validation-for="Type" class="fw-error"></span>
+            </fieldset>
+
+            <div class="fw-form-row">
+                <div class="fw-form-group">
+                    <label asp-for="Amount" class="fw-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text" id="amountSymbol" aria-hidden="true">@symbol</span>
+                        <input asp-for="Amount" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control fw-amount-input" placeholder="0.00" aria-describedby="amount-hint" />
+                    </div>
+                    <div id="amount-hint" class="fw-hint">Between 0.01 and 1,000,000.</div>
+                    <span asp-validation-for="Amount" class="fw-error"></span>
+                </div>
+
+                <div class="fw-form-group">
+                    <label asp-for="Date" class="fw-label"></label>
+                    <input asp-for="Date" type="datetime-local" class="form-control" />
+                    <span asp-validation-for="Date" class="fw-error"></span>
+                </div>
+            </div>
+
+            <div class="fw-form-group">
+                <label asp-for="Description" class="fw-label"></label>
+                <input asp-for="Description" class="form-control" placeholder="e.g. Groceries, Salary..." maxlength="500" />
+                <span asp-validation-for="Description" class="fw-error"></span>
+            </div>
+
+            <div class="fw-form-section">Wallet &middot; choose one</div>
+            <fieldset class="fw-form-group">
+                <legend class="visually-hidden">Wallet</legend>
+                <div class="fw-choice-grid">
+                    @foreach (var w in Model.Wallets)
+                    {
+                        bool isSavings = w.Type == WalletTypes.Savings;
+                        <div class="fw-choice">
+                            <input type="radio" name="WalletId" value="@w.Id" id="wallet-@w.Id"
+                                   data-symbol="@Money.Symbol(w.Currency)" checked="@(Model.WalletId == w.Id)" />
+                            <label for="wallet-@w.Id">
+                                <span class="fw-avatar" style="--h:@(isSavings ? 42 : 215)" aria-hidden="true">
+                                    <partial name="_SectionIcon" model="@(isSavings ? "savings" : "spending")" />
+                                </span>
+                                <span>
+                                    <span class="fw-choice-title">@w.Name</span>
+                                    <span class="fw-choice-sub">@(isSavings ? "Savings" : "Spending") &middot; @w.Currency &middot; @Money.Format(w.Balance, w.Currency)</span>
+                                </span>
+                            </label>
+                        </div>
+                    }
+                </div>
+                <span asp-validation-for="WalletId" class="fw-error"></span>
+            </fieldset>
+
+            <div class="fw-form-section">Details &middot; choose one of each</div>
+            <div class="fw-form-row">
+                <div class="fw-form-group">
+                    <label asp-for="MerchantId" class="fw-label"></label>
+                    <select asp-for="MerchantId" class="form-select"
+                            asp-items="@(new SelectList(Model.Merchants, nameof(Merchant.Id), nameof(Merchant.Name)))">
+                        <option value="">No merchant</option>
+                    </select>
+                    <span asp-validation-for="MerchantId" class="fw-error"></span>
+                </div>
+                <div class="fw-form-group">
+                    <label asp-for="CategoryId" class="fw-label"></label>
+                    <select asp-for="CategoryId" class="form-select"
+                            asp-items="@(new SelectList(Model.Categories, nameof(Category.Id), nameof(Category.Name)))">
+                        <option value="">No category</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="fw-error"></span>
+                </div>
+            </div>
+            <div class="fw-hint mb-3">
+                Missing one? <a asp-controller="Merchant" asp-action="Create">Add a merchant</a> or
+                <a asp-controller="Category" asp-action="Create">add a category</a>.
+            </div>
+
+            <div class="fw-form-section">Tags &middot; choose any number</div>
+            <fieldset class="fw-form-group">
+                <legend class="visually-hidden">Tags</legend>
+                @if (Model.Tags.Any())
+                {
+                    <div class="fw-chip-grid">
+                        @foreach (var t in Model.Tags)
+                        {
+                            bool tagHasIcon = !string.IsNullOrEmpty(t.Icon);
+                            <div class="fw-chip-check @Colors.Class(t.Color) @(tagHasIcon ? "has-icon" : "")" style="@Colors.Style(t.Color, t.Name)">
+                                <input type="checkbox" name="TagIds" value="@t.Id" id="tag-@t.Id" checked="@(Model.TagIds.Contains(t.Id))" />
+                                <label for="tag-@t.Id">
+                                    @if (tagHasIcon)
+                                    {
+                                        <partial name="_CategoryIcon" model="t.Icon" />
+                                    }
+                                    @t.Name
+                                </label>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="fw-inline-empty">No tags yet. <a asp-controller="Tag" asp-action="Create">Add a tag</a></div>
+                }
+            </fieldset>
+
+            <div class="fw-form-actions">
+                <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Save transaction")</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+        <script>
+            (function () {
+                // Show the currency symbol of the selected wallet next to the amount
+                var target = document.getElementById('amountSymbol');
+                if (!target) return;
+                document.querySelectorAll('input[name="WalletId"]').forEach(function (radio) {
+                    radio.addEventListener('change', function () {
+                        if (radio.checked) target.textContent = radio.dataset.symbol || '';
+                    });
+                });
+            })();
+        </script>
+    }
+</div>
