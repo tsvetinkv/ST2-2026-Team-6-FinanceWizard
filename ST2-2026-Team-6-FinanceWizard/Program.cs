@@ -32,6 +32,20 @@ namespace ST2_2026_Team_6_FinanceWizard
             builder.Services.AddScoped<IWalletService, WalletService>();
             builder.Services.AddScoped<ITransactionService, TransactionService>();
 
+            builder.Services.AddScoped<ILogoStorage, LogoStorage>();
+
+            // Downloads images for merchant logos (time-limited, redirects not followed)
+            builder.Services.AddHttpClient(LogoStorage.HttpClientName, client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(10);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("FinanceWizard/1.0");
+            })
+                .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+                {
+                    AllowAutoRedirect = false,
+                    ConnectTimeout = TimeSpan.FromSeconds(5)
+                });
+
             // Cookie Authentication
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
