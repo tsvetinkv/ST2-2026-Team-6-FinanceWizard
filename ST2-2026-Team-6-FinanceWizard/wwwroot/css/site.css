@@ -1167,14 +1167,12 @@ html[data-bs-theme="dark"] .fw-panel {
 
     .fw-tx-badge.is-income {
         color: var(--fw-income);
-        background: var(--fw-surface-2);
         background: color-mix(in srgb, var(--fw-income) 12%, var(--fw-surface));
         border-color: color-mix(in srgb, var(--fw-income) 40%, var(--fw-surface));
     }
 
     .fw-tx-badge.is-expense {
         color: var(--fw-expense);
-        background: var(--fw-surface-2);
         background: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
         border-color: color-mix(in srgb, var(--fw-expense) 40%, var(--fw-surface));
     }
@@ -1222,7 +1220,6 @@ html[data-bs-theme="dark"] .fw-panel {
     .fw-icon-btn.is-danger:hover,
     .fw-icon-btn.is-danger:focus-visible {
         color: var(--fw-expense);
-        background: var(--fw-surface-2);
         background: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
         border-color: color-mix(in srgb, var(--fw-expense) 40%, var(--fw-surface));
     }
@@ -1391,413 +1388,57 @@ html[data-bs-theme="dark"] .fw-panel {
         padding-right: 0.75rem;
     }
 }
-/* ---------- 9c. Wallets, merchants, categories, tags, dashboard ------------
-   Uses the same tokens as the rest of the app, so light / dark just works.
-   Per-item colours come from --h (hue 0-359) set inline by the views.
-   ---------------------------------------------------------------------------- */
-.fw-ico {
-    width: 1.25rem;
-    height: 1.25rem;
-    flex: none;
-}
-
-.fw-page-sub {
-    margin: 0.15rem 0 0;
-    font-size: 0.9rem;
-    color: var(--fw-text-muted);
-}
-
-.fw-count-badge {
-    display: inline-block;
-    margin-left: 0.5rem;
-    padding: 0.05rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    vertical-align: middle;
-    color: var(--fw-text-muted);
-    background: var(--fw-surface-2);
-    border: 1px solid var(--fw-border);
-}
-
-/* Card grid */
-.fw-card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
-
-.fw-item-card {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    padding: 0.85rem 1rem;
-    margin: 0;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-.fw-item-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--fw-input-border);
-    box-shadow: var(--fw-shadow-sm);
-}
 
 /* ---------- 10. Motion ------------------------------------------------------ */
 @keyframes fw-grow {
     from {
         transform: scaleY(0);
     }
+
+    to {
+        transform: scaleY(1);
+    }
 }
 
-.fw-item-name {
-    font-weight: 700;
-    line-height: 1.25;
-    overflow-wrap: normal;
-}
-
-.fw-item-meta {
-    font-size: 0.8rem;
-    color: var(--fw-text-muted);
-}
-
-/* Coloured avatar / icon tile (hue-based, readable in both themes) */
-.fw-avatar {
-    --h: 220;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-    width: 2.6rem;
-    height: 2.6rem;
-    border-radius: 0.75rem;
-    font-size: 1.1rem;
-    font-weight: 800;
-    background: hsl(var(--h) 80% 92%);
-    color: hsl(var(--h) 65% 26%);
-    border: 1px solid hsl(var(--h) 55% 78%);
-}
-
-    .fw-avatar .fw-ico {
-        width: 1.35rem;
-        height: 1.35rem;
+@keyframes fw-float {
+    0%, 100% {
+        transform: translateY(0);
     }
 
-html[data-bs-theme="dark"] .fw-avatar {
-    background: hsl(var(--h) 40% 22%);
-    color: hsl(var(--h) 85% 85%);
-    border-color: hsl(var(--h) 40% 36%);
-}
-
-/* Tag pills */
-.fw-tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.fw-tag {
-    --h: 220;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.15rem;
-    padding: 0.3rem 0.8rem;
-    border-radius: 999px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    line-height: 1.3;
-    background: hsl(var(--h) 80% 92%);
-    color: hsl(var(--h) 65% 26%);
-    border: 1px solid hsl(var(--h) 55% 78%);
-}
-
-    .fw-tag::before {
-        content: "#";
-        opacity: 0.7;
+    50% {
+        transform: translateY(-8px);
     }
-
-    .fw-tag.is-sm {
-        padding: 0.05rem 0.5rem;
-        font-size: 0.75rem;
-    }
-
-html[data-bs-theme="dark"] .fw-tag {
-    background: hsl(var(--h) 40% 22%);
-    color: hsl(var(--h) 85% 85%);
-    border-color: hsl(var(--h) 40% 36%);
 }
 
-/* Inline label chip (category / merchant / wallet inside table rows) */
-.fw-chip {
-    --h: 220;
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ---------- 12. Wallet edit link ------------------------------------------- */
+.fw-wallet-edit {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.1rem 0.55rem;
+    margin-top: 0.85rem;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--fw-border);
     border-radius: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    white-space: nowrap;
     background: var(--fw-surface-2);
     color: var(--fw-text);
-    border: 1px solid var(--fw-border);
-}
-
-    .fw-chip .fw-ico {
-        width: 0.9rem;
-        height: 0.9rem;
-        color: hsl(var(--h) 60% 40%);
-    }
-
-html[data-bs-theme="dark"] .fw-chip .fw-ico {
-    color: hsl(var(--h) 85% 75%);
-}
-
-.fw-tx-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    margin-top: 0.3rem;
-}
-
-.fw-tx-merchant {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--fw-text-muted);
-}
-
-/* Wallet cards */
-.fw-wallet-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-    gap: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-.fw-wallet-card {
-    position: relative;
-    margin: 0;
-    padding: 1.1rem 1.2rem 1.15rem;
-    overflow: hidden;
-}
-
-    .fw-wallet-card::before {
-        content: "";
-        position: absolute;
-        inset: 0 0 auto 0;
-        height: 4px;
-        background: var(--fw-primary);
-    }
-
-    .fw-wallet-card.is-savings::before {
-        background: var(--fw-gold);
-    }
-
-.fw-wallet-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-bottom: 0.9rem;
-}
-
-.fw-wallet-name {
-    margin: 0;
-    font-size: 1.05rem;
-    font-weight: 700;
-    overflow-wrap: anywhere;
-}
-
-.fw-wallet-balance {
-    font-size: 1.7rem;
-    font-weight: 800;
-    line-height: 1.15;
-    font-variant-numeric: tabular-nums;
-}
-
-.fw-wallet-label {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--fw-text-muted);
+    text-decoration: none;
 }
 
-.fw-type-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.1rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    white-space: nowrap;
-    color: var(--fw-link);
-    background: color-mix(in srgb, var(--fw-primary) 12%, var(--fw-surface));
-    border: 1px solid color-mix(in srgb, var(--fw-primary) 40%, var(--fw-surface));
-}
-
-    .fw-type-badge .fw-ico {
-        width: 0.85rem;
-        height: 0.85rem;
-    }
-
-    .fw-type-badge.is-savings {
-        color: var(--fw-gold-text);
-        background: color-mix(in srgb, var(--fw-gold) 22%, var(--fw-surface));
-        border-color: color-mix(in srgb, var(--fw-gold) 70%, var(--fw-surface));
-    }
-
-/* Summary strip with several wallets */
-.fw-summary-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem 2.5rem;
-    align-items: flex-end;
-}
-
-.fw-summary-sub {
-    font-size: 0.8rem;
-    color: var(--fw-text-muted);
-}
-
-/* Form: wide card + choice cards, chips, icon picker */
-.fw-form-card.is-wide {
-    max-width: 44rem;
-}
-
-.fw-form-section {
-    margin: 1.4rem 0 0.9rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--fw-border);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--fw-text-muted);
-}
-
-.fw-form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 1rem;
-}
-
-@media (max-width: 575.98px) {
-    .fw-form-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-.fw-choice-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    gap: 0.6rem;
-}
-
-.fw-choice {
-    position: relative;
-}
-
-    .fw-choice input {
-        position: absolute;
-        opacity: 0;
-        width: 1px;
-        height: 1px;
-    }
-
-    .fw-choice label {
-        display: flex;
-        align-items: center;
-        gap: 0.7rem;
-        height: 100%;
-        margin: 0;
-        padding: 0.7rem 0.85rem;
-        border: 1px solid var(--fw-input-border);
-        border-radius: 0.65rem;
+    .fw-wallet-edit:hover,
+    .fw-wallet-edit:focus-visible {
         background: var(--fw-surface);
-        color: var(--fw-text);
-        cursor: pointer;
-        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-        .fw-choice label:hover {
-            border-color: var(--fw-primary);
-        }
-
-    .fw-choice input:checked + label {
+        color: var(--fw-primary);
         border-color: var(--fw-primary);
-        background: color-mix(in srgb, var(--fw-primary) 12%, var(--fw-surface));
-        box-shadow: 0 0 0 2px var(--fw-primary);
-    }
-
-    .fw-choice input:focus-visible + label {
-        outline: 3px solid var(--fw-focus);
-        outline-offset: 2px;
-    }
-
-.fw-choice-title {
-    display: block;
-    font-weight: 700;
-    line-height: 1.25;
-}
-
-.fw-choice-sub {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--fw-text-muted);
-    font-variant-numeric: tabular-nums;
-}
-
-/* Multi-select chips (tags) */
-.fw-chip-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.fw-chip-check {
-    --h: 220;
-    position: relative;
-}
-
-    .fw-chip-check input {
-        position: absolute;
-        opacity: 0;
-        width: 1px;
-        height: 1px;
-    }
-
-    .fw-chip-check label {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        margin: 0;
-        padding: 0.3rem 0.8rem;
-        border-radius: 999px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--fw-text);
-        background: var(--fw-surface);
-        border: 1px solid var(--fw-input-border);
-        cursor: pointer;
-        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    }
-
-        .fw-chip-check label::before {
-            content: "#";
-            opacity: 0.6;
-        }
-
-        .fw-chip-check label:hover {
-            border-color: var(--fw-primary);
-        }
-
-    .fw-chip-check input:checked + label {
-        background: var(--fw-primary);
-        border-color: var(--fw-primary);
-        color: var(--fw-on-primary);
     }
 
         .fw-chip-check input:checked + label::before {
