@@ -11,6 +11,8 @@ public class Transaction
 
     public long WalletId { get; set; }
     public Wallet Wallet { get; set; } = null!;
+<<<<<<< HEAD
+=======
 
     // Exactly one merchant / one category (both optional)
     public long? MerchantId { get; set; }
@@ -21,4 +23,5 @@ public class Transaction
 
     // Many tags
     public ICollection<TransactionTag> TransactionTags { get; set; } = new List<TransactionTag>();
+>>>>>>> origin/feature/database-setup
 }
