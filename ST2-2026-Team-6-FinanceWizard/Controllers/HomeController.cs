@@ -1,8 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using ST2_2026_Team_6_FinanceWizard.Models;
-using ST2_2026_Team_6_FinanceWizard.Repositories;
-using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -12,29 +9,18 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IWalletService _walletService;
-        private readonly IEfRepository<Transaction> _transactionRepo;
-        private readonly IEfRepository<Merchant> _merchantRepo;
-        private readonly IEfRepository<Category> _categoryRepo;
-        private readonly IEfRepository<Tag> _tagRepo;
+        private readonly IDashboardFacade _dashboardFacade;
 
-        public HomeController(
-            ILogger<HomeController> logger,
-            IWalletService walletService,
-            IEfRepository<Transaction> transactionRepo,
-            IEfRepository<Merchant> merchantRepo,
-            IEfRepository<Category> categoryRepo,
-            IEfRepository<Tag> tagRepo)
+        public HomeController(ILogger<HomeController> logger, IDashboardFacade dashboardFacade)
         {
             _logger = logger;
-            _walletService = walletService;
-            _transactionRepo = transactionRepo;
-            _merchantRepo = merchantRepo;
-            _categoryRepo = categoryRepo;
-            _tagRepo = tagRepo;
+            _dashboardFacade = dashboardFacade;
         }
 
-        public async Task<IActionResult> Index()
+        // The dashboard is never cached (not by the browser, its back/forward cache or a proxy),
+        // so after adding, editing or deleting a transaction the numbers are always up to date.
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> Index(string? currency)
         {
             // Guests see the landing page
             if (!(User.Identity?.IsAuthenticated ?? false))
@@ -42,29 +28,11 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
                 return View();
             }
 
-            // Signed-in users see their dashboard with shortcuts to every section
+            // Signed-in users see their dashboard: balances, recent transactions, KPIs and charts
             long userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var userTransactions = _transactionRepo.All().Where(t => t.Wallet.UserId == userId);
-
-            var model = new HomeDashboardViewModel
-            {
-                Wallets = await _walletService.GetAllByUserIdAsync(userId),
-                TransactionCount = await userTransactions.CountAsync(),
-                MerchantCount = await _merchantRepo.All().CountAsync(),
-                CategoryCount = await _categoryRepo.All().CountAsync(),
-                TagCount = await _tagRepo.All().CountAsync(),
-                RecentTransactions = await userTransactions
-                    .AsNoTracking()
-                    .Include(t => t.Wallet)
-                    .Include(t => t.Merchant)
-                    .Include(t => t.Category)
-                    .OrderByDescending(t => t.Date)
-                    .Take(5)
-                    .ToListAsync()
-            };
-
-            return View(model);
+            var data = await _dashboardFacade.GetDashboardDataAsync(userId, currency);
+            return View(HomeDashboardViewModel.FromDashboardData(data));
         }
 
         public IActionResult Privacy()

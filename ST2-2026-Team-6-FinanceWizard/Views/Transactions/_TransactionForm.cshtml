@@ -114,6 +114,9 @@
                         <option value="">No category</option>
                     </select>
                     <span asp-validation-for="CategoryId" class="fw-error"></span>
+                    <div id="aiCategoryHint" class="fw-ai-hint" hidden aria-live="polite"
+                         data-url="@Url.Action("SuggestCategory", "Transactions")"
+                         data-create-url="@Url.Action("Create", "Category")"></div>
                 </div>
             </div>
             <div class="fw-hint mb-3">
@@ -167,5 +170,6 @@
                 });
             })();
         </script>
+        <script src="~/js/fw-ai-category.js" asp-append-version="true"></script>
     }
 </div>

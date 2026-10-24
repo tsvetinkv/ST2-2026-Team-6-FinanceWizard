@@ -3095,3 +3095,88 @@ html[data-bs-theme="dark"] .fw-chip-check.has-color input:checked + label .fw-bi
 html[data-bs-theme="dark"] .fw-chip-check.has-color input:checked + label .fw-ico {
     color: #000000;
 }
+
+/* ==========================================================================
+   Dashboard charts (Chart.js) and AI category suggestion
+   Colours come from the same tokens as the rest of the app, so light / dark just works.
+   ========================================================================== */
+.fw-chart-box {
+    position: relative;
+    height: 280px;
+}
+
+.fw-ai-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.6rem;
+    margin-top: 0.4rem;
+    font-size: 0.875rem;
+    color: var(--fw-text-muted);
+}
+
+    .fw-ai-hint[hidden] {
+        display: none;
+    }
+
+    .fw-ai-hint strong {
+        color: var(--fw-text);
+    }
+
+    .fw-ai-hint a {
+        color: var(--fw-link);
+    }
+
+.fw-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    background: var(--fw-primary);
+    color: var(--fw-on-primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.fw-ai-action {
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--fw-primary);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--fw-link);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .fw-ai-action:hover {
+        background: var(--fw-surface-2);
+    }
+
+    .fw-ai-action:focus-visible {
+        outline: 3px solid var(--fw-focus);
+        outline-offset: 2px;
+    }
+
+/* The select that was just filled in by the suggestion */
+.fw-ai-flash {
+    animation: fw-ai-flash 1.8s ease-out;
+}
+
+@keyframes fw-ai-flash {
+    0% {
+        box-shadow: 0 0 0 4px var(--fw-primary);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fw-ai-flash {
+        animation: none;
+        box-shadow: 0 0 0 3px var(--fw-primary);
+    }
+}

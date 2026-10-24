@@ -21,6 +21,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
         private readonly IEfRepository<Tag> _tagRepo;
         private readonly ITransactionService _transactionService;
         private readonly IWalletService _walletService;
+        private readonly IAiCategoryService _aiCategoryService;
 
         public TransactionsController(
             IEfRepository<Transaction> transactionRepo,
@@ -28,7 +29,8 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             IEfRepository<Category> categoryRepo,
             IEfRepository<Tag> tagRepo,
             ITransactionService transactionService,
-            IWalletService walletService)
+            IWalletService walletService,
+            IAiCategoryService aiCategoryService)
         {
             _transactionRepo = transactionRepo;
             _merchantRepo = merchantRepo;
@@ -36,6 +38,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             _tagRepo = tagRepo;
             _transactionService = transactionService;
             _walletService = walletService;
+            _aiCategoryService = aiCategoryService;
         }
 
         private long GetUserId() => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -111,6 +114,26 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
                 await PopulateOptionsAsync(model);
                 return View(model);
             }
+        }
+
+        // GET /Transactions/SuggestCategory?description=Starbucks&merchantId=3
+        // Used by the transaction form to pre-select a category while the user types.
+        [HttpGet]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> SuggestCategory(string? description, long? merchantId, CancellationToken cancellationToken)
+        {
+            string? merchantName = null;
+            if (merchantId.HasValue)
+            {
+                merchantName = await _merchantRepo.All()
+                    .AsNoTracking()
+                    .Where(m => m.Id == merchantId.Value)
+                    .Select(m => m.Name)
+                    .FirstOrDefaultAsync(cancellationToken);
+            }
+
+            var suggestion = await _aiCategoryService.SuggestAsync(GetUserId(), description, merchantName, cancellationToken);
+            return Json(suggestion);
         }
 
         [HttpGet]

@@ -1,5 +1,6 @@
 @model HomeDashboardViewModel
 @using System.Globalization
+@using System.Text.Json
 @{
     ViewData["Title"] = "Home";
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
@@ -104,6 +105,130 @@
             <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </a>
     </nav>
+
+    var kpi = Model.Kpis;
+    string kpiSymbol = Money.Symbol(kpi.Currency);
+    string chartJson = JsonSerializer.Serialize(
+        new { currency = kpi.Currency, symbol = kpiSymbol, months = Model.Monthly, categories = Model.SpendingByCategory },
+        new JsonSerializerOptions(JsonSerializerDefaults.Web));
+    string MoneyOf(decimal v) => Money.Format(v, kpi.Currency);
+
+    <link rel="stylesheet" href="~/css/fw-dashboard.css" asp-append-version="true" />
+
+    <div class="fw-kpi-head">
+        <h2 class="fw-section-label">This month</h2>
+        @if (Model.AvailableCurrencies.Count > 1)
+        {
+            <nav class="fw-currency-switch" aria-label="Show statistics in currency">
+                @foreach (var cur in Model.AvailableCurrencies)
+                {
+                    bool active = string.Equals(cur, kpi.Currency, StringComparison.OrdinalIgnoreCase);
+                    <a asp-controller="Home" asp-action="Index" asp-route-currency="@cur"
+                       class="fw-currency-link @(active ? "is-active" : "")"
+                       aria-current="@(active ? "true" : null)">@cur</a>
+                }
+            </nav>
+        }
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card is-income">
+                <div class="fw-kpi-card-label">Income</div>
+                <div class="fw-kpi-card-value is-income">+@MoneyOf(kpi.IncomeThisMonth)</div>
+                <div class="fw-kpi-card-meta">Money received</div>
+            </article>
+        </div>
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card is-expense">
+                <div class="fw-kpi-card-label">Expenses</div>
+                <div class="fw-kpi-card-value is-expense">&minus;@MoneyOf(kpi.ExpensesThisMonth)</div>
+                <div class="fw-kpi-card-meta">
+                    @if (kpi.ExpenseChangePercent is decimal change)
+                    {
+                        <text>@(change > 0 ? "+" : "")@change.ToString("0", CultureInfo.InvariantCulture)% vs. last month</text>
+                    }
+                    else
+                    {
+                        <text>Money spent</text>
+                    }
+                </div>
+            </article>
+        </div>
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card @(kpi.NetThisMonth >= 0 ? "is-income" : "is-expense")">
+                <div class="fw-kpi-card-label">Net</div>
+                <div class="fw-kpi-card-value @(kpi.NetThisMonth >= 0 ? "is-income" : "is-expense")">@(kpi.NetThisMonth >= 0 ? "+" : "−")@MoneyOf(Math.Abs(kpi.NetThisMonth))</div>
+                <div class="fw-kpi-card-meta">Income minus expenses</div>
+            </article>
+        </div>
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card">
+                <div class="fw-kpi-card-label">Savings rate</div>
+                <div class="fw-kpi-card-value @(kpi.SavingsRatePercent is decimal sr ? (sr >= 0 ? "is-income" : "is-expense") : "")">@(kpi.SavingsRatePercent is decimal rate ? rate.ToString("0", CultureInfo.InvariantCulture) + "%" : "–")</div>
+                <div class="fw-kpi-card-meta">@(kpi.SavingsRatePercent == null ? "No income recorded yet" : "Share of income kept")</div>
+            </article>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <section class="fw-panel h-100" aria-labelledby="home-monthly-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-monthly-h">Income vs. expenses</h2>
+                    <span class="fw-muted small">Last @Model.Monthly.Count months &middot; @kpi.Currency</span>
+                </div>
+                @if (Model.HasChartData)
+                {
+                    <div class="fw-chart-box">
+                        <canvas id="fwMonthlyChart" role="img" aria-label="Bar chart of income and expenses for each of the last @Model.Monthly.Count months"></canvas>
+                    </div>
+                    <table class="visually-hidden">
+                        <caption>Income and expenses per month</caption>
+                        <thead><tr><th scope="col">Month</th><th scope="col">Income</th><th scope="col">Expenses</th></tr></thead>
+                        <tbody>
+                            @foreach (var m in Model.Monthly)
+                            {
+                                <tr><th scope="row">@m.Label</th><td>@MoneyOf(m.Income)</td><td>@MoneyOf(m.Expense)</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="fw-list-empty">No transactions in the last @Model.Monthly.Count months. <a asp-controller="Transactions" asp-action="Create">Add one</a> to see your chart.</div>
+                }
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <section class="fw-panel h-100" aria-labelledby="home-category-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-category-h">Spending by category</h2>
+                    <span class="fw-muted small">Last @Model.Monthly.Count months</span>
+                </div>
+                @if (Model.SpendingByCategory.Any())
+                {
+                    <div class="fw-chart-box">
+                        <canvas id="fwCategoryChart" role="img" aria-label="Doughnut chart of spending by category"></canvas>
+                    </div>
+                    <table class="visually-hidden">
+                        <caption>Spending by category</caption>
+                        <thead><tr><th scope="col">Category</th><th scope="col">Spent</th></tr></thead>
+                        <tbody>
+                            @foreach (var c in Model.SpendingByCategory)
+                            {
+                                <tr><th scope="row">@c.Name</th><td>@MoneyOf(c.Total)</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="fw-list-empty">No expenses yet.</div>
+                }
+            </section>
+        </div>
+    </div>
+    <div id="fwDashboardData" data-chart="@chartJson" hidden></div>
 
     <div class="row g-3 mb-4">
         <div class="col-lg-5">
@@ -332,6 +457,12 @@ else
 }
 
 @section Scripts {
+    @if (isAuthenticated)
+    {
+        <!-- Chart.js (pinned version) + dashboard charts that follow the CSS tokens and the light / dark theme -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+        <script src="~/js/fw-dashboard.js" asp-append-version="true"></script>
+    }
     <script>
         (function() {
             var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
