@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using ST2_2026_Team_6_FinanceWizard.Repositories;
 using ST2_2026_Team_6_FinanceWizard.Services;
@@ -26,7 +26,9 @@ namespace ST2_2026_Team_6_FinanceWizard
                 options.UseSqlServer(DatabaseConnection.Instance.ConnectionString));
 
             // Register repositories and services
-            builder.Services.AddScoped(typeof(IEfRepository<>), typeof(EfRepository<>));
+            builder.Services.AddScoped(typeof(EfRepository<>));
+            // Decorator: всяко IEfRepository<T> се получава обвито в LoggingRepository<T>
+            builder.Services.AddScoped(typeof(IEfRepository<>), typeof(LoggingRepository<>));
             builder.Services.AddSingleton(builder.Configuration);
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IWalletService, WalletService>();
