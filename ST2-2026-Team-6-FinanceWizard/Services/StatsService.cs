@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ST2_2026_Team_6_FinanceWizard.Models;
 using ST2_2026_Team_6_FinanceWizard.Repositories;
+using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 using ST2_2026_Team_6_FinanceWizard.Services.Models;
 using System.Globalization;

@@ -1,3 +1,5 @@
+using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
+
 namespace ST2_2026_Team_6_FinanceWizard.Services.Contracts
 {
     public interface ITransactionService
