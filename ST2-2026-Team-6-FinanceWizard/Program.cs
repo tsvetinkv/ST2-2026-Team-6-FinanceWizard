@@ -24,6 +24,9 @@ namespace ST2_2026_Team_6_FinanceWizard
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IWalletService, WalletService>();
             builder.Services.AddScoped<ITransactionService, TransactionService>();
+            builder.Services.AddScoped<IStatsService, StatsService>();
+            builder.Services.AddScoped<IDashboardFacade, DashboardFacade>();
+            builder.Services.AddScoped<IAiCategoryService, AiCategoryService>();
 
             // Settings for Cookie Auth
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

@@ -1167,14 +1167,12 @@ html[data-bs-theme="dark"] .fw-panel {
 
     .fw-tx-badge.is-income {
         color: var(--fw-income);
-        background: var(--fw-surface-2);
         background: color-mix(in srgb, var(--fw-income) 12%, var(--fw-surface));
         border-color: color-mix(in srgb, var(--fw-income) 40%, var(--fw-surface));
     }
 
     .fw-tx-badge.is-expense {
         color: var(--fw-expense);
-        background: var(--fw-surface-2);
         background: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
         border-color: color-mix(in srgb, var(--fw-expense) 40%, var(--fw-surface));
     }
@@ -1222,7 +1220,6 @@ html[data-bs-theme="dark"] .fw-panel {
     .fw-icon-btn.is-danger:hover,
     .fw-icon-btn.is-danger:focus-visible {
         color: var(--fw-expense);
-        background: var(--fw-surface-2);
         background: color-mix(in srgb, var(--fw-expense) 12%, var(--fw-surface));
         border-color: color-mix(in srgb, var(--fw-expense) 40%, var(--fw-surface));
     }
@@ -1420,3 +1417,26 @@ html[data-bs-theme="dark"] .fw-panel {
         scroll-behavior: auto !important;
     }
 }
+
+/* ---------- 12. Wallet edit link ------------------------------------------- */
+.fw-wallet-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.85rem;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.5rem;
+    background: var(--fw-surface-2);
+    color: var(--fw-text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+    .fw-wallet-edit:hover,
+    .fw-wallet-edit:focus-visible {
+        background: var(--fw-surface);
+        color: var(--fw-primary);
+        border-color: var(--fw-primary);
+    }

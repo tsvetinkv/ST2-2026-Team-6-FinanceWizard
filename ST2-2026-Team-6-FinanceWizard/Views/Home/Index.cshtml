@@ -1,4 +1,7 @@
 @using System.Globalization
+@using System.Text.Json
+@model ST2_2026_Team_6_FinanceWizard.Models.HomeDashboardViewModel
+
 @{
     ViewData["Title"] = "Home";
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
@@ -23,7 +26,9 @@
 
 @if (isAuthenticated)
 {
-    <section class="fw-hero" aria-labelledby="welcome-heading">
+    var wallets = Model.Wallets;
+
+    <section class="fw-hero mb-4" aria-labelledby="welcome-heading">
         <span class="fw-blob fw-blob-blue" aria-hidden="true"></span>
         <span class="fw-blob fw-blob-gold" aria-hidden="true"></span>
         <h1 id="welcome-heading" class="fw-headline mb-3">Welcome back, <span class="fw-highlight">@User.Identity?.Name</span></h1>
@@ -33,6 +38,243 @@
             <a class="btn btn-outline-fw btn-lg" asp-controller="Transactions" asp-action="Create">New transaction</a>
         </div>
     </section>
+
+    <h2 class="fw-section-label">Manage</h2>
+    <nav class="fw-tile-grid" aria-label="Sections">
+        <a class="fw-tile" style="--h:215" asp-controller="Transactions" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("transactions")" /></span>
+            <span class="fw-tile-title">Transactions</span>
+            <span class="fw-tile-count">@Model.TransactionCount</span>
+            <span class="fw-tile-desc">Income &amp; expenses</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:150" asp-controller="Wallet" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("wallets")" /></span>
+            <span class="fw-tile-title">Wallets</span>
+            <span class="fw-tile-count">@wallets.Count</span>
+            <span class="fw-tile-desc">Spending &amp; savings</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:28" asp-controller="Merchant" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("merchants")" /></span>
+            <span class="fw-tile-title">Merchants</span>
+            <span class="fw-tile-count">@Model.MerchantCount</span>
+            <span class="fw-tile-desc">Shops &amp; services</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:275" asp-controller="Category" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("categories")" /></span>
+            <span class="fw-tile-title">Categories</span>
+            <span class="fw-tile-count">@Model.CategoryCount</span>
+            <span class="fw-tile-desc">Group your spending</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+        <a class="fw-tile" style="--h:340" asp-controller="Tag" asp-action="Index">
+            <span class="fw-avatar" aria-hidden="true"><partial name="_SectionIcon" model="@("tags")" /></span>
+            <span class="fw-tile-title">Tags</span>
+            <span class="fw-tile-count">@Model.TagCount</span>
+            <span class="fw-tile-desc">Flexible labels</span>
+            <svg class="fw-tile-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+    </nav>
+
+    var kpi = Model.Kpis;
+    string kpiSymbol = Money.Symbol(kpi.Currency);
+    string chartJson = JsonSerializer.Serialize(
+        new { currency = kpi.Currency, symbol = kpiSymbol, months = Model.Monthly, categories = Model.SpendingByCategory },
+        new JsonSerializerOptions(JsonSerializerDefaults.Web));
+    string MoneyOf(decimal v) => Money.Format(v, kpi.Currency);
+
+    <link rel="stylesheet" href="~/css/fw-dashboard.css" asp-append-version="true" />
+
+    <div class="fw-kpi-head mt-4">
+        <h2 class="fw-section-label">This month</h2>
+        @if (Model.AvailableCurrencies.Count > 1)
+        {
+            <nav class="fw-currency-switch" aria-label="Show statistics in currency">
+                @foreach (var cur in Model.AvailableCurrencies)
+                {
+                    bool active = string.Equals(cur, kpi.Currency, StringComparison.OrdinalIgnoreCase);
+                    <a asp-controller="Home" asp-action="Index" asp-route-currency="@cur"
+                       class="fw-currency-link @(active ? "is-active" : "")"
+                       aria-current="@(active ? "true" : null)">@cur</a>
+                }
+            </nav>
+        }
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card is-income">
+                <div class="fw-kpi-card-label">Income</div>
+                <div class="fw-kpi-card-value is-income">+@MoneyOf(kpi.IncomeThisMonth)</div>
+                <div class="fw-kpi-card-meta">Money received</div>
+            </article>
+        </div>
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card is-expense">
+                <div class="fw-kpi-card-label">Expenses</div>
+                <div class="fw-kpi-card-value is-expense">&minus;@MoneyOf(kpi.ExpensesThisMonth)</div>
+                <div class="fw-kpi-card-meta">
+                    @if (kpi.ExpenseChangePercent is decimal change)
+                    {
+                        <text>@(change > 0 ? "+" : "")@change.ToString("0", CultureInfo.InvariantCulture)% vs. last month</text>
+                    }
+                    else
+                    {
+                        <text>Money spent</text>
+                    }
+                </div>
+            </article>
+        </div>
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card @(kpi.NetThisMonth >= 0 ? "is-income" : "is-expense")">
+                <div class="fw-kpi-card-label">Net</div>
+                <div class="fw-kpi-card-value @(kpi.NetThisMonth >= 0 ? "is-income" : "is-expense")">@(kpi.NetThisMonth >= 0 ? "+" : "−")@MoneyOf(Math.Abs(kpi.NetThisMonth))</div>
+                <div class="fw-kpi-card-meta">Income minus expenses</div>
+            </article>
+        </div>
+        <div class="col-6 col-lg-3 d-flex">
+            <article class="fw-kpi-card">
+                <div class="fw-kpi-card-label">Savings rate</div>
+                <div class="fw-kpi-card-value @(kpi.SavingsRatePercent is decimal sr ? (sr >= 0 ? "is-income" : "is-expense") : "")">@(kpi.SavingsRatePercent is decimal rate ? rate.ToString("0", CultureInfo.InvariantCulture) + "%" : "–")</div>
+                <div class="fw-kpi-card-meta">@(kpi.SavingsRatePercent == null ? "No income recorded yet" : "Share of income kept")</div>
+            </article>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-7">
+            <section class="fw-panel h-100" aria-labelledby="home-monthly-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-monthly-h">Income vs. expenses</h2>
+                    <span class="fw-muted small">Last @Model.Monthly.Count months &middot; @kpi.Currency</span>
+                </div>
+                @if (Model.HasChartData)
+                {
+                    <div class="fw-chart-box">
+                        <canvas id="fwMonthlyChart" role="img" aria-label="Bar chart of income and expenses for each of the last @Model.Monthly.Count months"></canvas>
+                    </div>
+                    <table class="visually-hidden">
+                        <caption>Income and expenses per month</caption>
+                        <thead><tr><th scope="col">Month</th><th scope="col">Income</th><th scope="col">Expenses</th></tr></thead>
+                        <tbody>
+                            @foreach (var m in Model.Monthly)
+                            {
+                                <tr><th scope="row">@m.Label</th><td>@MoneyOf(m.Income)</td><td>@MoneyOf(m.Expense)</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="fw-list-empty">No transactions in the last @Model.Monthly.Count months. <a asp-controller="Transactions" asp-action="Create">Add one</a> to see your chart.</div>
+                }
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <section class="fw-panel h-100" aria-labelledby="home-category-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-category-h">Spending by category</h2>
+                    <span class="fw-muted small">Last @Model.Monthly.Count months</span>
+                </div>
+                @if (Model.SpendingByCategory.Any())
+                {
+                    <div class="fw-chart-box">
+                        <canvas id="fwCategoryChart" role="img" aria-label="Doughnut chart of spending by category"></canvas>
+                    </div>
+                    <table class="visually-hidden">
+                        <caption>Spending by category</caption>
+                        <thead><tr><th scope="col">Category</th><th scope="col">Spent</th></tr></thead>
+                        <tbody>
+                            @foreach (var c in Model.SpendingByCategory)
+                            {
+                                <tr><th scope="row">@c.Name</th><td>@MoneyOf(c.Total)</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="fw-list-empty">No expenses yet.</div>
+                }
+            </section>
+        </div>
+    </div>
+    <div id="fwDashboardData" data-chart="@chartJson" hidden></div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-5">
+            <section class="fw-panel h-100" aria-labelledby="home-wallets-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-wallets-h">Your wallets</h2>
+                    <a asp-controller="Wallet" asp-action="Index" class="small">Manage</a>
+                </div>
+                @if (wallets.Any())
+                {
+                    <ul class="fw-list">
+                        @foreach (var w in wallets)
+                        {
+                            bool sv = w.Type == WalletTypes.Savings;
+                            <li>
+                                <div class="fw-list-main">
+                                    <div class="fw-list-title">@w.Name</div>
+                                    <span class="fw-type-badge @(sv ? "is-savings" : "")">
+                                        <partial name="_SectionIcon" model="@(sv ? "savings" : "spending")" />
+                                        @(sv ? "Savings" : "Spending")
+                                    </span>
+                                </div>
+                                <strong class="fw-amount">@Money.Format(w.Balance, w.Currency)</strong>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="fw-list-empty">No wallets yet. <a asp-controller="Wallet" asp-action="Create">Create one</a></div>
+                }
+            </section>
+        </div>
+        <div class="col-lg-7">
+            <section class="fw-panel h-100" aria-labelledby="home-recent-h">
+                <div class="fw-panel-head">
+                    <h2 id="home-recent-h">Recent transactions</h2>
+                    <a asp-controller="Transactions" asp-action="Index" class="small">View all</a>
+                </div>
+                @if (Model.RecentTransactions.Any())
+                {
+                    <ul class="fw-list">
+                        @foreach (var t in Model.RecentTransactions)
+                        {
+                            bool inc = t.Type == "Income";
+                            string title = !string.IsNullOrWhiteSpace(t.Description) ? t.Description : (t.Merchant?.Name ?? "Transaction");
+                            <li>
+                                <div class="fw-list-main">
+                                    <div class="fw-list-title">@title</div>
+                                    <div class="fw-list-sub">
+                                        @t.Date.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)
+                                        @if (t.Merchant != null && !string.IsNullOrWhiteSpace(t.Description))
+                                        {
+                                            <text>&middot; @t.Merchant.Name</text>
+                                        }
+                                        @if (t.Category != null)
+                                        {
+                                            <text>&middot; @t.Category.Name</text>
+                                        }
+                                        &middot; @t.Wallet.Name
+                                    </div>
+                                </div>
+                                <span class="fw-amount @(inc ? "is-income" : "is-expense")">@(inc ? "+" : "−")@Money.Format(t.Amount, t.Wallet.Currency)</span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="fw-list-empty">Nothing here yet. <a asp-controller="Transactions" asp-action="Create">Record your first transaction</a></div>
+                }
+            </section>
+        </div>
+    </div>
 }
 else
 {
@@ -187,6 +429,12 @@ else
 }
 
 @section Scripts {
+    @if (isAuthenticated)
+    {
+        <!-- Chart.js (pinned version) + dashboard charts that follow the CSS tokens and the light / dark theme -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+        <script src="~/js/fw-dashboard.js" asp-append-version="true"></script>
+    }
     <script>
         (function() {
             var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
