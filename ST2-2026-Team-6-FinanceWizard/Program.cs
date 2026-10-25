@@ -40,7 +40,6 @@ namespace ST2_2026_Team_6_FinanceWizard
             builder.Services.AddScoped(typeof(EfRepository<>));
             // Decorator: всяко IEfRepository<T> се получава обвито в LoggingRepository<T>
             builder.Services.AddScoped(typeof(IEfRepository<>), typeof(LoggingRepository<>));
-            builder.Services.AddSingleton(builder.Configuration);
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IWalletService, WalletService>();
             builder.Services.AddScoped<ITransactionService, TransactionService>();
