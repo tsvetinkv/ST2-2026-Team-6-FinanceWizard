@@ -1,0 +1,104 @@
+﻿@model ST2_2026_Team_6_FinanceWizard.Models.AssistantViewModel
+@{
+    ViewData["Title"] = "AI Financial Advisor";
+}
+
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <h1 class="h4 mb-0"><i class="bi bi-robot"></i> AI Financial Advisor</h1>
+                    <span class="badge bg-light text-primary">Provider: @Model.ActiveProvider</span>
+                </div>
+                <div class="card-body">
+
+                    @if (Model.ConversationHistory.Any())
+                    {
+                        <div class="chat-box mb-4 p-3 bg-light rounded border" style="max-height: 400px; overflow-y: auto;">
+                            @foreach (var msg in Model.ConversationHistory)
+                            {
+                                <div class="mb-3 @(msg.Sender == "User" ? "text-end" : "text-start")">
+                                    <div class="d-inline-block p-3 rounded text-start @(msg.Sender == "User" ? "bg-primary text-white" : "bg-white text-dark shadow-sm border")" style="max-width: 80%;">
+                                        <div class="fw-bold small mb-1">
+                                            @(msg.Sender == "User" ? "You" : "FinanceWizard AI") &middot; <span class="opacity-75">@msg.Timestamp.ToString("HH:mm")</span>
+                                        </div>
+                                        <div style="white-space: pre-line;">@msg.Message</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-bold">Quick Prompts:</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm prompt-btn" data-prompt="Summarize my spending habits this month.">
+                                📊 Summarize monthly spending
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm prompt-btn" data-prompt="Where am I spending the most money?">
+                                💡 Where am I spending the most money?
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm prompt-btn" data-prompt="How can I save more money based on my current balance?">
+                                💰 How can I save more money?
+                            </button>
+                        </div>
+                    </div>
+
+                    <form asp-controller="Assistant" asp-action="Ask" method="post" id="assistantForm">
+                        @Html.AntiForgeryToken()
+
+                        @for (int i = 0; i < Model.ConversationHistory.Count; i++)
+                        {
+                            <input type="hidden" name="ConversationHistory[@i].Sender" value="@Model.ConversationHistory[i].Sender" />
+                            <input type="hidden" name="ConversationHistory[@i].Message" value="@Model.ConversationHistory[i].Message" />
+                            <input type="hidden" name="ConversationHistory[@i].Timestamp" value="@Model.ConversationHistory[i].Timestamp" />
+                        }
+
+                        <div class="mb-3">
+                            <label asp-for="UserQuestion" class="form-label fw-bold">Your Question:</label>
+                            <textarea asp-for="UserQuestion" class="form-control" id="userQuestionInput" rows="3" placeholder="Ask anything about your budget, savings, or spending trends..." maxlength="500" required></textarea>
+                            <span asp-validation-for="UserQuestion" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" asp-for="IncludeTransactions" id="includeTxSwitch">
+                            <label class="form-check-label" for="includeTxSwitch">
+                                Include my recent transactions (Anonymized: Amount, Type, Date, Description)
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="submit" class="btn btn-primary px-4" id="submitBtn">
+                                <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
+                                <span id="btnText">Send Question</span>
+                            </button>
+                            <small class="text-muted">No personal credentials or passwords are transmitted.</small>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="card-footer bg-light text-muted small text-center">
+                    ⚠️ <strong>Disclaimer:</strong> Responses generated by AI are for educational purposes and do not constitute official financial advice.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.prompt-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('userQuestionInput').value = this.getAttribute('data-prompt');
+            });
+        });
+
+        document.getElementById('assistantForm').addEventListener('submit', function() {
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            document.getElementById('btnText').textContent = 'Analyzing...';
+            document.getElementById('submitBtn').disabled = true;
+        });
+    </script>
+}
