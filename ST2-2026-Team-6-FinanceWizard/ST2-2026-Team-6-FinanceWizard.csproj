@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ST2_2026_Team_6_FinanceWizard</RootNamespace>
+    <UserSecretsId>cf335a62-80cc-490e-9234-2b3f6f5742f5</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />

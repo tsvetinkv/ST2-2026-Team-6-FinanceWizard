@@ -80,6 +80,13 @@
                                    aria-current="@(IsSection("Tag") ? "page" : null)"
                                    asp-controller="Tag" asp-action="Index">Tags</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(IsSection("Assistant") ? "active" : "")"
+                                   aria-current="@(IsSection("Assistant") ? "page" : null)"
+                                   asp-controller="Assistant" asp-action="Index">
+                                    <i class="bi bi-robot me-1" aria-hidden="true"></i>AI Advisor
+                                </a>
+                            </li>
                         }
                     </ul>
 
@@ -183,4 +190,4 @@
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
-</html>
+</html>

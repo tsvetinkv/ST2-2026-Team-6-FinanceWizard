@@ -1,4 +1,5 @@
-﻿namespace ST2_2026_Team_6_FinanceWizard.Services.Contracts;
+﻿#nullable enable
+namespace ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 public interface IAiProvider
 {

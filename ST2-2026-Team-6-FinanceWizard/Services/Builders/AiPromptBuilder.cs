@@ -1,51 +1,45 @@
-﻿using System.Text;
+﻿#nullable enable
+using System.Text;
 using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services.Builders;
 
-public sealed class AiPromptBuilder
+/// <summary>
+/// Builder Pattern: Assembles contextual AI prompts safely while stripping user PII (names, emails, passwords).
+/// </summary>
+public class AiPromptBuilder
 {
     private readonly StringBuilder _sb = new();
 
-    public AiPromptBuilder()
+    public AiPromptBuilder WithSystemRole(string roleDescription)
     {
-        _sb.AppendLine("You are FinanceWizard AI — an intelligent financial assistant.");
-        _sb.AppendLine("Let’s give brief, practical, and accurate personal finance advice in English.");
-        _sb.AppendLine("MANDATORY RULE: End every response with the sentence: ‘Note: The information provided is for informational purposes only and does not constitute official financial advice.’'");
-        _sb.AppendLine();
+        _sb.AppendLine($"System Role: {roleDescription}");
+        return this;
     }
 
-    public AiPromptBuilder AddWalletContext(Wallet? wallet)
+    public AiPromptBuilder WithUserQuestion(string question)
     {
-        if (wallet != null)
+        _sb.AppendLine($"\nUser Question:\n{question.Trim()}");
+        return this;
+    }
+
+    public AiPromptBuilder WithAnonymizedTransactions(IEnumerable<Transaction>? transactions)
+    {
+        if (transactions == null || !transactions.Any()) return this;
+
+        _sb.AppendLine("\nRecent User Transactions (Anonymized Context):");
+        foreach (var t in transactions.Take(10))
         {
-            _sb.AppendLine("[Financial portfolio context]");
-            _sb.AppendLine($"- Balance: {wallet.Balance:F2} {wallet.Currency}");
-            _sb.AppendLine();
+            var currency = t.Wallet?.Currency ?? "EUR";
+            var description = t.Description ?? "N/A";
+            _sb.AppendLine($"- Date: {t.Date:yyyy-MM-dd}, Amount: {t.Amount} {currency}, Type: {t.Type}, Description: {description}");
         }
         return this;
     }
 
-    public AiPromptBuilder AddRecentTransactions(IEnumerable<Transaction>? transactions)
+    public string Build()
     {
-        if (transactions != null && transactions.Any())
-        {
-            _sb.AppendLine("[Anonymized recent transactions]");
-            foreach (var t in transactions)
-            {
-                _sb.AppendLine($"- Date: {t.Date:yyyy-MM-dd} | Type: {t.Type} | Amount: {t.Amount:F2} | Description: {t.Description}");
-            }
-            _sb.AppendLine();
-        }
-        return this;
+        _sb.AppendLine("\nNotice: Provide structured, practical advice. Never ask for passwords or full account numbers.");
+        return _sb.ToString();
     }
-
-    public AiPromptBuilder AddUserQuestion(string question)
-    {
-        _sb.AppendLine("[User’s question]");
-        _sb.AppendLine(question.Trim());
-        return this;
-    }
-
-    public string Build() => _sb.ToString();
 }

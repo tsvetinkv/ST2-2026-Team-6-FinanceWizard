@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿#nullable enable
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using ST2_2026_Team_6_FinanceWizard.Repositories;
 using ST2_2026_Team_6_FinanceWizard.Services;
+using ST2_2026_Team_6_FinanceWizard.Services.AI;
 using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 namespace ST2_2026_Team_6_FinanceWizard
@@ -14,6 +16,15 @@ namespace ST2_2026_Team_6_FinanceWizard
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            // AI Integration: Distributed memory cache and session state for Advisor Chat history
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             // 1. Initialize Singleton Database Connection
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -51,6 +62,33 @@ namespace ST2_2026_Team_6_FinanceWizard
                     ConnectTimeout = TimeSpan.FromSeconds(5)
                 });
 
+            // AI Integration: Configure AI Client Singleton & Strategy Pattern
+            // Key comes from user-secrets (Gemini:ApiKey); model and timeout come from appsettings.json.
+            var apiKey = builder.Configuration["Gemini:ApiKey"]
+                ?? builder.Configuration["ExternalApis:GeminiApiKey"]
+                ?? string.Empty;
+
+            var geminiModel = builder.Configuration["Gemini:Model"] ?? "gemini-3.5-flash-lite";
+
+            AiClientProvider.Instance.Initialize(apiKey, geminiModel, 30);
+
+            builder.Services.AddHttpClient<GeminiProvider>(client =>
+            {
+                client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+                client.Timeout = AiClientProvider.Instance.Timeout;
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("FinanceWizard/1.0");
+            });
+
+            builder.Services.AddScoped<MockProvider>();
+
+            // Dynamic Strategy Selection: Uses live Gemini provider if API Key is configured, otherwise falls back to MockProvider
+            builder.Services.AddScoped<IAiProvider>(sp =>
+            {
+                return string.IsNullOrWhiteSpace(AiClientProvider.Instance.ApiKey)
+                    ? sp.GetRequiredService<MockProvider>()
+                    : sp.GetRequiredService<GeminiProvider>();
+            });
+
             // Cookie Authentication
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -83,6 +121,9 @@ namespace ST2_2026_Team_6_FinanceWizard
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // AI Integration: Enable Session Middleware for chat history tracking
+            app.UseSession();
 
             app.MapControllerRoute(
                 name: "default",

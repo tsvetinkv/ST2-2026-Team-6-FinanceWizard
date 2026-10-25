@@ -1,23 +1,24 @@
-﻿using System.Net;
-using System.Text;
-using System.Text.Encodings.Web;
+﻿#nullable enable
+using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services.AI;
 
-public sealed class GeminiProvider : IAiProvider
+public class GeminiProvider : IAiProvider
 {
     private readonly HttpClient _http;
     private readonly ILogger<GeminiProvider> _logger;
 
-    private static readonly JsonSerializerOptions JsonOpts = new()
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public string ProviderName => "Google Gemini AI";
+    public string ProviderName => "Google Gemini REST API";
 
     public GeminiProvider(HttpClient http, ILogger<GeminiProvider> logger)
     {
@@ -27,72 +28,76 @@ public sealed class GeminiProvider : IAiProvider
 
     public async Task<string> GetResponseAsync(string prompt, CancellationToken cancellationToken = default)
     {
-        var config = AiClientProvider.Instance;
-        if (string.IsNullOrWhiteSpace(config.ApiKey))
+        var apiKey = AiClientProvider.Instance.ApiKey;
+        if (string.IsNullOrWhiteSpace(apiKey))
         {
-            return "Error: Gemini API key is not configured. Please add 'Gemini:ApiKey' in user-secrets.";
+            return "Gemini API key is missing. Please configure 'Gemini:ApiKey' using dotnet user-secrets.";
         }
 
-        var endpoint = $"v1beta/models/{Uri.EscapeDataString(config.Model)}:generateContent?key={Uri.EscapeDataString(config.ApiKey)}";
+        var model = AiClientProvider.Instance.Model;
+        if (model.StartsWith("models/", StringComparison.Ordinal))
+        {
+            model = model[7..];
+        }
 
         var payload = new
         {
             contents = new[]
             {
-                new { role = "user", parts = new[] { new { text = prompt } } }
-            },
-            generationConfig = new
-            {
-                temperature = 0.2,
-                maxOutputTokens = 1000
+                new { parts = new[] { new { text = prompt } } }
             }
         };
 
-        var json = JsonSerializer.Serialize(payload, JsonOpts);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"v1beta/models/{model}:generateContent")
+        {
+            Content = JsonContent.Create(payload, options: _jsonOptions)
+        };
+        request.Headers.Add("x-goog-api-key", apiKey);
 
         try
         {
-            using var response = await _http.PostAsync(endpoint, content, cancellationToken);
-            var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
+            using var response = await _http.SendAsync(request, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Gemini API returned HTTP status {Status}: {Text}", (int)response.StatusCode, responseText);
-
-                return response.StatusCode switch
-                {
-                    HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden or HttpStatusCode.BadRequest
-                        => "Error: Rejected API key or invalid model.",
-                    HttpStatusCode.TooManyRequests
-                        => "Error: Too many requests (HTTP 429). Please try again later.",
-                    HttpStatusCode.ServiceUnavailable
-                        => "Error: Gemini servers are overloaded (HTTP 503). Please try again later.",
-                    _ => $"Error from AI service (HTTP {(int)response.StatusCode})."
-                };
+                _logger.LogError("Gemini API error (HTTP {StatusCode}): {Body}", (int)response.StatusCode, body);
+                return $"[Gemini API Error HTTP {(int)response.StatusCode}]: {body}";
             }
 
-            using var doc = JsonDocument.Parse(responseText);
-            if (doc.RootElement.TryGetProperty("candidates", out var candidates) &&
-                candidates.GetArrayLength() > 0 &&
-                candidates[0].TryGetProperty("content", out var candidateContent) &&
-                candidateContent.TryGetProperty("parts", out var parts) &&
-                parts.GetArrayLength() > 0 &&
-                parts[0].TryGetProperty("text", out var textProp))
-            {
-                return textProp.GetString()?.Trim() ?? "Received an empty response from AI.";
-            }
+            var result = JsonSerializer.Deserialize<GeminiResponse>(body, _jsonOptions);
+            var text = result?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
 
-            return "No response was generated by the AI model.";
+            return string.IsNullOrWhiteSpace(text) ? "No response received from the AI model." : text.Trim();
         }
-        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            return "Error: The request to the AI timed out (Timeout).";
+            _logger.LogError(ex, "Network or timeout error calling Gemini API.");
+            return "Request timed out or a network error occurred. Please check your connection.";
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error communicating with Gemini API.");
-            return "An unexpected error occurred while connecting to the AI assistant.";
-        }
+    }
+
+    private class GeminiResponse
+    {
+        [JsonPropertyName("candidates")]
+        public List<Candidate>? Candidates { get; set; }
+    }
+
+    private class Candidate
+    {
+        [JsonPropertyName("content")]
+        public Content? Content { get; set; }
+    }
+
+    private class Content
+    {
+        [JsonPropertyName("parts")]
+        public List<Part>? Parts { get; set; }
+    }
+
+    private class Part
+    {
+        [JsonPropertyName("text")]
+        public string? Text { get; set; }
     }
 }
