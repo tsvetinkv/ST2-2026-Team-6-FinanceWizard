@@ -1,9 +1,9 @@
-﻿using System.Security.Claims;
+﻿#nullable enable
+using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ST2_2026_Team_6_FinanceWizard.Models;
-using ST2_2026_Team_6_FinanceWizard.Repositories;
-using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 using ST2_2026_Team_6_FinanceWizard.Services.Builders;
 using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
@@ -12,76 +12,93 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers;
 [Authorize]
 public class AssistantController : Controller
 {
+    private const string SessionChatKey = "Advisor_Chat_History";
     private readonly IAiProvider _aiProvider;
-    private readonly IWalletService _walletService;
-    private readonly IEfRepository<Transaction> _transactionRepo;
+    private readonly ITransactionService _transactionService;
 
-    public AssistantController(
-        IAiProvider aiProvider,
-        IWalletService walletService,
-        IEfRepository<Transaction> transactionRepo)
+    public AssistantController(IAiProvider aiProvider, ITransactionService transactionService)
     {
         _aiProvider = aiProvider;
-        _walletService = walletService;
-        _transactionRepo = transactionRepo;
+        _transactionService = transactionService;
     }
 
-    private long GetUserId() => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private long GetCurrentUserId()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return long.TryParse(claim, out var userId) ? userId : 0;
+    }
+
+    private List<ChatMessageDto> GetChatHistory()
+    {
+        var json = HttpContext.Session.GetString(SessionChatKey);
+        return string.IsNullOrEmpty(json)
+            ? new List<ChatMessageDto>()
+            : JsonSerializer.Deserialize<List<ChatMessageDto>>(json) ?? new List<ChatMessageDto>();
+    }
+
+    private void SaveChatHistory(List<ChatMessageDto> history)
+    {
+        var json = JsonSerializer.Serialize(history);
+        HttpContext.Session.SetString(SessionChatKey, json);
+    }
 
     [HttpGet]
     public IActionResult Index()
     {
-        return View(new AssistantViewModel { ActiveProvider = _aiProvider.ProviderName });
+        var vm = new AssistantViewModel
+        {
+            ConversationHistory = GetChatHistory(),
+            ActiveProvider = _aiProvider.ProviderName
+        };
+        return View(vm);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Ask(AssistantViewModel model, CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(AssistantViewModel model, CancellationToken cancellationToken)
     {
+        var history = GetChatHistory();
+        model.ConversationHistory = history;
         model.ActiveProvider = _aiProvider.ProviderName;
 
         if (!ModelState.IsValid)
         {
-            return View("Index", model);
+            return View(model);
         }
 
-        long userId = GetUserId();
-        var wallet = await _walletService.GetByUserIdAsync(userId);
+        var userId = GetCurrentUserId();
+        var builder = new AiPromptBuilder()
+            .WithSystemRole("You are an expert personal finance assistant inside FinanceWizard.")
+            .WithUserQuestion(model.UserQuestion);
 
-        IEnumerable<Transaction>? recentTransactions = null;
-        if (model.IncludeTransactions && wallet != null)
+        if (model.IncludeTransactions && userId > 0)
         {
-            recentTransactions = _transactionRepo.All()
-                .Where(t => t.WalletId == wallet.Id)
-                .OrderByDescending(t => t.Date)
-                .Take(10)
-                .ToList();
+            // Не се променя съществуващият договор: използва се GetAllByUserIdAsync
+            var allTransactions = await _transactionService.GetAllByUserIdAsync(userId);
+            var recentTx = allTransactions.OrderByDescending(t => t.Date).Take(10);
+            builder.WithAnonymizedTransactions(recentTx);
         }
 
-        string prompt = new AiPromptBuilder()
-            .AddWalletContext(wallet)
-            .AddRecentTransactions(recentTransactions)
-            .AddUserQuestion(model.UserQuestion)
-            .Build();
+        var prompt = builder.Build();
 
-        string aiAnswer = await _aiProvider.GetResponseAsync(prompt, cancellationToken);
+        history.Add(new ChatMessageDto { Sender = "User", Message = model.UserQuestion });
 
-        model.ConversationHistory.Add(new ChatMessageDto
-        {
-            Sender = "User",
-            Message = model.UserQuestion,
-            Timestamp = DateTime.Now
-        });
+        var reply = await _aiProvider.GetResponseAsync(prompt, cancellationToken);
+        history.Add(new ChatMessageDto { Sender = "AI", Message = reply });
 
-        model.ConversationHistory.Add(new ChatMessageDto
-        {
-            Sender = "AI",
-            Message = aiAnswer,
-            Timestamp = DateTime.Now
-        });
-
+        SaveChatHistory(history);
+        model.ConversationHistory = history;
         model.UserQuestion = string.Empty;
+        ModelState.Clear();
 
-        return View("Index", model);
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ClearHistory()
+    {
+        HttpContext.Session.Remove(SessionChatKey);
+        return RedirectToAction(nameof(Index));
     }
 }
