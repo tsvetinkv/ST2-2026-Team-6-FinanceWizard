@@ -1,3 +1,16 @@
+@using System.Security.Claims
+@inject ST2_2026_Team_6_FinanceWizard.Services.Contracts.IProfilePhotoService Photos
+@{
+    string? navPhoto = null;
+    var navName = User.Identity?.Name ?? string.Empty;
+    var navInitial = string.IsNullOrWhiteSpace(navName) ? "?" : char.ToUpper(navName.Trim()[0]).ToString();
+    var navHue = navName.Aggregate(0, (acc, ch) => (acc * 31 + ch) % 360);
+    if ((User.Identity?.IsAuthenticated ?? false) &&
+        long.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var navUserId))
+    {
+        navPhoto = Photos.GetUrl(navUserId);
+    }
+}
 @{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
@@ -53,7 +66,7 @@
                             <li class="nav-item">
                                 <a class="nav-link @(IsCurrent("Home", "Index") ? "active" : "")"
                                    aria-current="@(IsCurrent("Home", "Index") ? "page" : null)"
-                                   asp-controller="Home" asp-action="Index">Home</a>
+                                   asp-controller="Home" asp-action="Index">Dashboard</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(IsSection("Transactions") ? "active" : "")"
@@ -87,7 +100,16 @@
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <span class="navbar-text me-md-2">Hello, @User.Identity.Name!</span>
+                                <a class="fw-nav-avatar" asp-controller="Account" asp-action="Profile" aria-label="Profile" title="Profile">
+                                    @if (navPhoto != null)
+                                    {
+                                        <img src="@navPhoto" alt="" />
+                                    }
+                                    else
+                                    {
+                                        <span class="fw-avatar" style="--h:@navHue" aria-hidden="true">@navInitial</span>
+                                    }
+                                </a>
                             </li>
                             <li class="nav-item py-2 py-md-0">
                                 <form asp-controller="Account" asp-action="Logout" method="post">
@@ -181,6 +203,7 @@
             });
         })();
     </script>
+    <script src="~/js/password-toggle.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

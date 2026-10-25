@@ -39,6 +39,14 @@ namespace ST2_2026_Team_6_FinanceWizard
 
             builder.Services.AddScoped<ILogoStorage, LogoStorage>();
 
+            builder.Services.AddMemoryCache();
+            builder.Services.AddHttpClient<IExchangeRateService, ExchangeRateService>(client =>
+            {
+                client.BaseAddress = new Uri("https://api.frankfurter.dev/");
+                client.Timeout = TimeSpan.FromSeconds(8);
+            });
+            builder.Services.AddScoped<IProfilePhotoService, ProfilePhotoService>();
+
             // Downloads images for merchant logos (time-limited, redirects not followed)
             builder.Services.AddHttpClient(LogoStorage.HttpClientName, client =>
             {
