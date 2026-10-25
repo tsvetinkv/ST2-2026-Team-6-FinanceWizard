@@ -18,6 +18,8 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
         public UserService(
             IEfRepository<User> userRepo,
             IEfRepository<Wallet> walletRepo,
+            IEfRepository<Transaction> transactionRepo,
+            IExchangeRateService rates,
             IConfiguration config)
         {
             _userRepo = userRepo;
@@ -42,7 +44,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             await _userRepo.AddAsync(user);
             await _userRepo.SaveChangesAsync();
 
-            var wallet = new Wallet { UserId = user.Id, Name = "Main account", Type = WalletTypes.Spending, Balance = 0, Currency = "EUR" };
+            var wallet = new Wallet { UserId = user.Id, Balance = 0, Currency = "EUR" };
             await _walletRepo.AddAsync(wallet);
             await _walletRepo.SaveChangesAsync();
 
@@ -113,6 +115,42 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<User?> UpdateUsernameAsync(long userId, string newUsername)
+        {
+            var user = await _userRepo.All().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return null;
+
+            user.Username = newUsername;
+            await _userRepo.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<bool> ChangePasswordAsync(long userId, string currentPassword, string newPassword)
+        {
+            var user = await _userRepo.All().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return false;
+
+            // Текущата парола се проверява с BCrypt.Verify
+            if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash)) return false;
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _userRepo.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteAccountAsync(long userId, string password)
+        {
+            var user = await _userRepo.All().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return false;
+
+            if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash)) return false;
+
+            // Каскадното изтриване (User -> Wallet -> Transactions) е настроено в ApplicationDbContext/миграцията
+            _userRepo.Delete(user);
+            await _userRepo.SaveChangesAsync();
+            return true;
         }
     }
 }

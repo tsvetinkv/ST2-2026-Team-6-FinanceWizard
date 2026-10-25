@@ -19,7 +19,7 @@
 
         public IQueryable<T> All() => _inner.All();
 
-        public Task<T> GetByIdAsync(object id) => _inner.GetByIdAsync(id);
+        public Task<T?> GetByIdAsync(object id) => _inner.GetByIdAsync(id);
 
         public async Task AddAsync(T entity)
         {

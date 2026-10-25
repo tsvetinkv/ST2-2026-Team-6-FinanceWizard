@@ -19,4 +19,8 @@ public interface IWalletService
     // Deletes a wallet of the user. Returns false if it is not theirs / not found.
     // Throws InvalidOperationException while the wallet still has transactions.
     Task<bool> DeleteWalletAsync(long walletId, long userId);
+
+    Task<Wallet?> GetMainWalletAsync(long userId);
+    Task<CurrencyPreview> PreviewCurrencyChangeAsync(long userId, long walletId, string targetCurrency);
+    Task<CurrencyChangeResult> ChangeCurrencyAsync(long userId, long walletId, string newCurrency);
 }
