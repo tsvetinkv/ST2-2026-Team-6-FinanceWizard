@@ -2,12 +2,7 @@
 @{
     bool isEdit = ViewData["WalletId"] != null;
     string? routeId = isEdit ? ViewData["WalletId"]!.ToString() : null;
-
-    var currencies = new List<string> { "USD", "EUR", "JPY", "GBP", "AUD", "CAD", "CHF", "CNY" };
-    if (!string.IsNullOrWhiteSpace(Model.Currency) && !currencies.Contains(Model.Currency))
-    {
-        currencies.Add(Model.Currency);
-    }
+    var selectedCurrency = CurrencyInfo.Find(Model.Currency)?.Code ?? Model.Currency;
 }
 
 <div class="fw-panel fw-form-card">
@@ -59,14 +54,23 @@
             <div class="fw-form-group">
                 <label asp-for="Currency" class="fw-label"></label>
                 <select asp-for="Currency" class="form-select">
-                    @foreach (var c in currencies)
+                    @foreach (var c in CurrencyInfo.All)
                     {
-                        <option value="@c" selected="@(Model.Currency == c)">@c</option>
+                        <option value="@c.Code" selected="@(selectedCurrency == c.Code)">@c.Code</option>
                     }
                 </select>
                 <span asp-validation-for="Currency" class="fw-error"></span>
             </div>
         </div>
+
+        @if (isEdit)
+        {
+            <div class="fw-hint">
+                When you change the currency of an existing wallet, its balance and transactions are converted at today's exchange rate.
+            </div>
+        }
+
+        <div class="fw-form-actions">
 
         <div class="fw-form-actions">
             <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Create wallet")</button>

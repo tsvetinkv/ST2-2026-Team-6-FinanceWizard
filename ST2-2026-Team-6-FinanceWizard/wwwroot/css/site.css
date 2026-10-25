@@ -242,6 +242,31 @@ a {
     }
 
 /* ---------- 4. Navbar & footer --------------------------------------------- */
+.fw-nav-avatar {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.25rem;
+    text-decoration: none;
+}
+
+    .fw-nav-avatar img,
+    .fw-nav-avatar .fw-avatar {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 50%;
+        object-fit: cover;
+        font-size: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.7);
+        transition: border-color 0.2s ease;
+    }
+
+    .fw-nav-avatar:hover img,
+    .fw-nav-avatar:hover .fw-avatar,
+    .fw-nav-avatar:focus-visible img,
+    .fw-nav-avatar:focus-visible .fw-avatar {
+        border-color: var(--fw-gold);
+    }
+
 .fw-navbar {
     background-color: var(--fw-nav-bg);
     border-bottom: 3px solid var(--fw-gold);
@@ -1441,15 +1466,15 @@ html[data-bs-theme="dark"] .fw-panel {
         border-color: var(--fw-primary);
     }
 
-        .fw-chip-check input:checked + label::before {
-            content: "\2713";
-            opacity: 1;
-        }
+.fw-chip-check input:checked + label::before {
+    content: "\2713";
+    opacity: 1;
+}
 
-    .fw-chip-check input:focus-visible + label {
-        outline: 3px solid var(--fw-focus);
-        outline-offset: 2px;
-    }
+.fw-chip-check input:focus-visible + label {
+    outline: 3px solid var(--fw-focus);
+    outline-offset: 2px;
+}
 
 .fw-inline-empty {
     padding: 0.75rem 1rem;
@@ -2517,11 +2542,11 @@ html[data-bs-theme] .fw-avatar.fw-avatar-logo {
     flex: none;
 }
 
-.fw-item-actions form,
-.fw-tx-actions form,
-.fw-inline-form {
-    margin: 0;
-}
+    .fw-item-actions form,
+    .fw-tx-actions form,
+    .fw-inline-form {
+        margin: 0;
+    }
 
 a.fw-icon-btn {
     text-decoration: none;
@@ -2738,6 +2763,465 @@ html[data-bs-theme="dark"] .fw-chip-check.has-color input:checked + label .fw-ic
 }
 
 /* ==========================================================================
+   Profile page
+   ========================================================================== */
+/* Profile photo */
+.fw-profile-photo {
+    display: block;
+    width: 4.75rem;
+    height: 4.75rem;
+    margin: 0 auto 0.85rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--fw-border);
+}
+
+.fw-photo-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.fw-photo-frame {
+    flex: none;
+    width: 6rem;
+    height: 6rem;
+}
+
+    .fw-photo-frame .fw-profile-photo,
+    .fw-photo-frame .fw-avatar.fw-profile-avatar {
+        width: 6rem;
+        height: 6rem;
+        margin: 0;
+        font-size: 2.4rem;
+    }
+
+.fw-photo-controls {
+    flex: 1 1 14rem;
+    min-width: 0;
+}
+
+    .fw-photo-controls form {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0 0 0.6rem;
+    }
+
+#photo-input:focus-visible + label {
+    outline: 3px solid var(--fw-focus);
+    outline-offset: 2px;
+}
+
+#btn-photo:disabled,
+#btn-currency:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Exchange-rate preview */
+.fw-fx {
+    min-height: 1.4rem;
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fw-text);
+}
+
+.fw-profile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 992px) {
+    .fw-profile {
+        grid-template-columns: 17rem minmax(0, 1fr);
+        align-items: start;
+    }
+}
+
+.fw-profile-main {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+    .fw-profile-main .fw-panel,
+    .fw-profile-side .fw-panel {
+        margin-bottom: 0;
+    }
+
+.fw-profile-side {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 992px) {
+    .fw-profile-side {
+        position: sticky;
+        top: 1.25rem;
+    }
+}
+
+/* Profile card */
+.fw-profile-card {
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+}
+
+.fw-avatar.fw-profile-avatar {
+    width: 4.75rem;
+    height: 4.75rem;
+    border-radius: 50%;
+    font-size: 1.9rem;
+    margin: 0 auto 0.85rem;
+    border-width: 2px;
+}
+
+.fw-profile-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.fw-profile-email {
+    margin-top: 0.15rem;
+    font-size: 0.875rem;
+    color: var(--fw-text-muted);
+    overflow-wrap: anywhere;
+}
+
+.fw-profile-meta {
+    margin-top: 0.9rem;
+}
+
+/* Section navigation */
+.fw-profile-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 0.4rem;
+}
+
+    .fw-profile-nav a {
+        padding: 0.55rem 0.8rem;
+        border-radius: 0.5rem;
+        color: var(--fw-text);
+        font-size: 0.925rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+        .fw-profile-nav a:hover,
+        .fw-profile-nav a:focus-visible {
+            background: var(--fw-surface-2);
+            color: var(--fw-link);
+        }
+
+        .fw-profile-nav a.is-danger:hover,
+        .fw-profile-nav a.is-danger:focus-visible {
+            color: var(--fw-expense);
+        }
+
+@media (max-width: 991.98px) {
+    .fw-profile-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+}
+
+/* Sections */
+.fw-profile-section {
+    padding: 1.4rem 1.5rem 1.5rem;
+    scroll-margin-top: 1.25rem;
+}
+
+.fw-profile-head {
+    margin-bottom: 1.1rem;
+}
+
+    .fw-profile-head h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .fw-profile-head p {
+        margin: 0.2rem 0 0;
+        font-size: 0.9rem;
+        color: var(--fw-text-muted);
+        max-width: 60ch;
+    }
+
+.fw-profile-readonly {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin-bottom: 1.1rem;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--fw-border);
+    border-radius: 0.65rem;
+    background: var(--fw-surface-2);
+}
+
+.fw-profile-readonly-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--fw-text-muted);
+}
+
+.fw-profile-readonly-value {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.fw-profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.1rem;
+}
+
+    .fw-profile-actions .btn {
+        padding: 0.5rem 1.2rem;
+    }
+
+        .fw-profile-actions .btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+.fw-profile-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.9rem 0 0;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 1px solid var(--fw-border);
+    background: var(--fw-surface-2);
+    font-size: 0.875rem;
+    color: var(--fw-text);
+}
+
+    .fw-profile-note svg {
+        flex: none;
+        margin-top: 0.1rem;
+        color: var(--fw-link);
+    }
+
+.fw-profile-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.fw-pw {
+    position: relative;
+}
+
+.fw-pw-input {
+    padding-right: 3rem !important;
+}
+
+.fw-pw-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0.45rem;
+    transform: translateY(-50%);
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--fw-text-muted);
+    cursor: pointer;
+}
+
+    .fw-pw-toggle:hover,
+    .fw-pw-toggle:focus-visible {
+        color: var(--fw-link);
+        background: var(--fw-surface-2);
+    }
+
+    .fw-pw-toggle svg {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+/* Password strength meter */
+.fw-meter {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+}
+
+    .fw-meter span {
+        flex: 1 1 0;
+        max-width: 3.5rem;
+        height: 0.3rem;
+        border-radius: 999px;
+        background: var(--fw-border);
+        transition: background-color 0.2s ease;
+    }
+
+    .fw-meter em {
+        margin-left: 0.4rem;
+        min-width: 4rem;
+        font-size: 0.8rem;
+        font-style: normal;
+        font-weight: 600;
+        color: var(--fw-text-muted);
+    }
+
+    .fw-meter[data-level="1"] span:nth-child(-n+1) {
+        background: var(--fw-expense-bar);
+    }
+
+    .fw-meter[data-level="2"] span:nth-child(-n+2) {
+        background: var(--fw-gold);
+    }
+
+    .fw-meter[data-level="3"] span:nth-child(-n+3) {
+        background: var(--fw-income-bar);
+    }
+
+    .fw-meter[data-level="4"] span:nth-child(-n+4) {
+        background: var(--fw-income-bar);
+    }
+
+/* Currency picker */
+.fw-cur-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: 0.6rem;
+}
+
+.fw-cur {
+    position: relative;
+}
+
+    .fw-cur input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    .fw-cur label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        height: 100%;
+        margin: 0;
+        padding: 0.85rem 0.5rem;
+        text-align: center;
+        border: 1px solid var(--fw-input-border);
+        border-radius: 0.75rem;
+        background: var(--fw-surface);
+        color: var(--fw-text);
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .fw-cur label:hover {
+            border-color: var(--fw-primary);
+        }
+
+    .fw-cur input:checked + label {
+        border-color: var(--fw-primary);
+        background: color-mix(in srgb, var(--fw-primary) 12%, var(--fw-surface));
+        box-shadow: 0 0 0 2px var(--fw-primary);
+    }
+
+    .fw-cur input:focus-visible + label {
+        outline: 3px solid var(--fw-focus);
+        outline-offset: 2px;
+    }
+
+.fw-cur-symbol {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.fw-cur-name {
+    font-size: 0.8rem;
+    color: var(--fw-text-muted);
+}
+
+/* Delete account (collapsible) */
+.fw-profile-details summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+    .fw-profile-details summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .fw-profile-details summary::after {
+        content: "";
+        flex: none;
+        width: 0.55rem;
+        height: 0.55rem;
+        border-right: 2px solid var(--fw-text-muted);
+        border-bottom: 2px solid var(--fw-text-muted);
+        transform: rotate(45deg);
+        transition: transform 0.2s ease;
+    }
+
+.fw-profile-details[open] summary::after {
+    transform: rotate(-135deg);
+}
+
+.fw-profile-details summary strong {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--fw-expense);
+}
+
+.fw-profile-details summary small {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.9rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-profile-details summary:focus-visible {
+    outline: 3px solid var(--fw-focus);
+    outline-offset: 4px;
+    border-radius: 0.4rem;
+}
+
+@media (max-width: 575.98px) {
+    .fw-profile-section {
+        padding: 1.1rem 1rem 1.2rem;
+    }
+
+    .fw-profile-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
    Dashboard charts (Chart.js) and AI category suggestion
    Colours come from the same tokens as the rest of the app, so light / dark just works.
    ========================================================================== */
@@ -2819,5 +3303,168 @@ html[data-bs-theme="dark"] .fw-chip-check.has-color input:checked + label .fw-ic
     .fw-ai-flash {
         animation: none;
         box-shadow: 0 0 0 3px var(--fw-primary);
+    }
+}
+
+/* ==========================================================================
+   Navbar: responsive
+   ========================================================================== */
+.fw-navbar {
+    padding-block: 0.5rem;
+}
+
+    .fw-navbar .navbar-brand {
+        margin-right: 1rem;
+        white-space: nowrap;
+        font-size: clamp(1.05rem, 3.6vw, 1.3rem);
+    }
+
+    /* Links */
+    .fw-navbar .navbar-nav {
+        gap: 0;
+    }
+
+        .fw-navbar .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+            .fw-navbar .navbar-nav .nav-link:hover,
+            .fw-navbar .navbar-nav .nav-link.active {
+                color: #ffffff;
+            }
+
+    /* Hamburger button */
+    .fw-navbar .navbar-toggler {
+        padding: 0.35rem 0.6rem;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        border-radius: 0.6rem;
+    }
+
+        .fw-navbar .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        .fw-navbar .navbar-toggler:focus-visible {
+            outline: 3px solid var(--fw-gold);
+            outline-offset: 2px;
+        }
+
+    .fw-navbar .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,255,255,0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+/* Avatar + Log out + theme toggle: one compact group, all the same height */
+.fw-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+    .fw-nav-actions form {
+        margin: 0;
+    }
+
+    .fw-nav-actions .fw-nav-avatar {
+        padding: 0;
+    }
+
+        .fw-nav-actions .fw-nav-avatar img,
+        .fw-nav-actions .fw-nav-avatar .fw-avatar {
+            width: 2.25rem;
+            height: 2.25rem;
+        }
+
+    .fw-nav-actions .fw-theme-toggle {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+.fw-nav-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    height: 2.25rem;
+    padding: 0 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 0.6rem;
+    background: transparent;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+    .fw-nav-logout-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #ffffff;
+    }
+
+    .fw-nav-logout-btn:focus-visible {
+        outline: 3px solid var(--fw-gold);
+        outline-offset: 2px;
+    }
+
+/* Collapsed menu (below 992px): tablets and phones */
+@media (max-width: 991.98px) {
+    .fw-navbar .navbar-collapse {
+        padding: 0.5rem 0 0.25rem;
+    }
+
+    .fw-navbar .navbar-nav .nav-link {
+        padding: 0.75rem 0.75rem;
+        border-bottom: 0;
+        border-left: 3px solid transparent;
+        border-radius: 0.4rem;
+    }
+
+        .fw-navbar .navbar-nav .nav-link.active {
+            border-left-color: var(--fw-gold);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+    /* Avatar on the left, Log out and theme toggle on the right */
+    .fw-nav-actions {
+        margin-top: 0.5rem;
+        padding: 0.75rem 0.75rem 0.25rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+        .fw-nav-actions form {
+            margin-left: auto;
+        }
+}
+
+/* Expanded menu: 992px and up */
+@media (min-width: 992px) {
+    .fw-navbar .navbar-collapse {
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .fw-navbar .navbar-nav {
+        gap: 0.15rem;
+    }
+
+    .fw-nav-actions {
+        margin-left: auto;
+    }
+}
+
+/* 992 to 1199: tighter so everything fits on one line */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .fw-navbar > .container {
+        max-width: 100%;
+    }
+
+    .fw-navbar .navbar-nav .nav-link {
+        padding-inline: 0.55rem;
+        font-size: 0.95rem;
+    }
+
+    .fw-navbar .navbar-brand {
+        margin-right: 0.5rem;
     }
 }
