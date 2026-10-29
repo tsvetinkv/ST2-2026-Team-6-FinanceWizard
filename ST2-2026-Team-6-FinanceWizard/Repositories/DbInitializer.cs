@@ -3,6 +3,15 @@ using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
 namespace ST2_2026_Team_6_FinanceWizard.Repositories;
 
+/// <summary>
+/// Seeds reference data on startup (categories, merchants, tags) and a demo user + wallets.
+///
+/// Design notes:
+/// - Static class: no state, no DI, called once from Program.cs.
+/// - MigrateAsync runs any pending EF migrations, so the DB schema is always up-to-date.
+/// - Each "if not already any" guard means the seed is idempotent — running the app twice
+///   does not create duplicates.
+/// </summary>
 public static class DbInitializer
 {
     public static async Task SeedAsync(ApplicationDbContext context)

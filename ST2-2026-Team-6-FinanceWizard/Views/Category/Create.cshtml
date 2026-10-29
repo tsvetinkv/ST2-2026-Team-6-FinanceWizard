@@ -3,9 +3,12 @@
     ViewData["Title"] = "Add category";
 }
 
+@* The form lives in a shared partial so Create and Edit render identical markup.
+   Only the button label and the <form asp-action> differ (see _CategoryForm.cshtml). *@
 <partial name="_CategoryForm" model="Model" />
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @* fw-pickers.js powers the live preview (name → avatar letter) and the colour / icon pickers. *@
     <script src="~/js/fw-pickers.js" asp-append-version="true"></script>
 }

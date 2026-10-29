@@ -1,8 +1,10 @@
 @model MerchantFormViewModel
 @{
+    // Same partial for Create and Edit; the caller sets ViewData["MerchantId"] for Edit.
     bool isEdit = ViewData["MerchantId"] != null;
     long? merchantId = isEdit ? Convert.ToInt64(ViewData["MerchantId"]) : null;
 
+    // Initial avatar fallback: first letter of the name, or "?" when empty.
     string previewName = (Model.Name ?? string.Empty).Trim();
     string initial = previewName.Length > 0 ? previewName.Substring(0, 1).ToUpperInvariant() : "?";
     bool hasCurrentLogo = !string.IsNullOrWhiteSpace(Model.CurrentLogoUrl);
@@ -12,9 +14,12 @@
     <h1 class="fw-page-title fw-form-title">@(isEdit ? "Edit merchant" : "Add merchant")</h1>
     <p class="fw-muted fw-form-sub">@(isEdit ? "Change the name or the logo." : "A shop, service or person you pay or get paid by.")</p>
 
+    @* enctype="multipart/form-data" is required for the file input to work. *@
     <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@merchantId" method="post" enctype="multipart/form-data" novalidate>
         <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 
+        @* Live preview. The data-* attributes are hooks for fw-pickers.js:
+           when the name or logo changes, the preview avatar updates. *@
         <div class="fw-item-card fw-preview" aria-hidden="true">
             @if (hasCurrentLogo)
             {
@@ -33,6 +38,10 @@
             <span asp-validation-for="Name" class="fw-error"></span>
         </div>
 
+        @* Logo section:
+           - Upload a photo (Logo field, IFormFile)
+           - OR paste a link (ImageLink field)
+           The controller's ValidateLogoChoice enforces "one or the other", not both. *@
         <fieldset class="fw-form-group">
             <legend class="fw-label">Logo (optional)</legend>
             <div class="fw-hint mb-2">Upload a photo <strong>or</strong> paste the web link of an image. Use only one of them.</div>
@@ -40,6 +49,7 @@
             <div class="fw-form-group">
                 <label for="Logo" class="fw-label">Upload a photo</label>
                 <input type="file" id="Logo" name="Logo" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" />
+                @* #logoError is filled by fw-pickers.js if the user picks a wrong file. *@
                 <span id="logoError" class="fw-error"></span>
                 @Html.ValidationMessage("Logo", new { @class = "fw-error" })
             </div>
@@ -50,6 +60,7 @@
                 <span asp-validation-for="ImageLink" class="fw-error"></span>
             </div>
 
+            @* RemoveLogo only appears in Edit mode with an existing logo. *@
             @if (hasCurrentLogo)
             {
                 <label class="fw-check">

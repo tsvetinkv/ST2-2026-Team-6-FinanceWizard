@@ -3,6 +3,8 @@
     ViewData["Title"] = "Edit merchant";
 }
 
+@* The controller has already put ViewData["MerchantId"] in place,
+   so _MerchantForm will render "Edit merchant" and post to the Edit action with the id. *@
 <partial name="_MerchantForm" model="Model" />
 
 @section Scripts {

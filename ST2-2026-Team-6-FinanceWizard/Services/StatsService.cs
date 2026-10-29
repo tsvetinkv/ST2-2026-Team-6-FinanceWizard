@@ -8,6 +8,19 @@ using System.Globalization;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services
 {
+    /// <summary>
+    /// Calculates the dashboard statistics: KPIs, monthly income/expenses, category breakdown.
+    ///
+    /// Design notes:
+    /// - All money in one currency at a time. Summing EUR + USD directly would be wrong,
+    ///   so the service first picks ONE currency to display and only sums transactions in it.
+    /// - The chosen currency is the requested one, otherwise the currency with the most
+    ///   transactions in the period, otherwise the currency most wallets use.
+    /// - The category breakdown keeps the top N categories and rolls the rest into "Other",
+    ///   so the pie chart stays readable.
+    /// - Everything is read fresh from the DB (no caching), so the numbers always match
+    ///   the current transactions.
+    /// </summary>
     public class StatsService : IStatsService
     {
         private const int MaxCategorySlices = 6;
@@ -28,6 +41,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             months = Math.Clamp(months, 1, 24);
             var now = today ?? DateTime.Now;
 
+            // First month in the window (e.g. 6 months back) and the first instant AFTER the window.
             var firstMonth = new DateTime(now.Year, now.Month, 1).AddMonths(-(months - 1));
             var endExclusive = new DateTime(now.Year, now.Month, 1).AddMonths(1);
 
@@ -47,6 +61,8 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
             var wallets = await _walletService.GetAllByUserIdAsync(userId);
 
+            // "Available currencies" = all currencies the user has in their wallets + period activity,
+            // de-duplicated case-insensitively and sorted for a stable dropdown.
             var available = wallets.Select(w => w.Currency)
                 .Concat(activity.Select(a => a.Currency))
                 .Where(c => !string.IsNullOrWhiteSpace(c))
@@ -54,6 +70,11 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 .OrderBy(c => c, StringComparer.Ordinal)
                 .ToList();
 
+            // Pick the currency to display, in this order:
+            // 1. the requested one (if supported),
+            // 2. the one with the most transactions,
+            // 3. the one most wallets use,
+            // 4. EUR as the default.
             string selected =
                 available.FirstOrDefault(c => string.Equals(c, currency?.Trim(), StringComparison.OrdinalIgnoreCase))
                 ?? activity.OrderByDescending(a => a.Count).ThenBy(a => a.Currency, StringComparer.Ordinal)
@@ -102,9 +123,13 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 Currency = selected,
                 IncomeThisMonth = current.Income,
                 ExpensesThisMonth = current.Expense,
+                // Savings rate = (income - expenses) / income, as a percentage. Null if income = 0
+                // (the ratio is mathematically undefined, and showing 0% would be misleading).
                 SavingsRatePercent = current.Income > 0
                     ? Math.Round((current.Income - current.Expense) / current.Income * 100m, 0)
                     : null,
+                // Expense change vs. last month. Null if last month had no expenses
+                // (percentage change from zero is undefined).
                 ExpenseChangePercent = previousExpense.HasValue && previousExpense.Value > 0
                     ? Math.Round((current.Expense - previousExpense.Value) / previousExpense.Value * 100m, 0)
                     : null
@@ -118,16 +143,19 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 {
                     Name = g.Key,
                     Total = g.Sum(r => r.Amount),
+                    // Pick the first non-null colour for this category name (they all share it, but be safe).
                     Color = g.Select(r => r.Category?.Color).FirstOrDefault(c => c != null)
                 })
                 .OrderByDescending(g => g.Total)
                 .ToList();
 
+            // Top N categories get their own slice.
             var slices = expenseGroups
                 .Take(MaxCategorySlices)
                 .Select(g => new CategorySlice(g.Name, g.Total, Colors.Normalize(g.Color), Hue.Of(g.Name)))
                 .ToList();
 
+            // Everything else is aggregated into a single "Other" slice, only if it exists.
             decimal rest = expenseGroups.Skip(MaxCategorySlices).Sum(g => g.Total);
             if (rest > 0)
             {
@@ -144,6 +172,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             };
         }
 
+        /// <summary>
+        /// Type is stored as a string, so the comparison is case-insensitive
+        /// (this tolerates old rows that might have been saved with a different casing).
+        /// </summary>
         private static bool IsIncome(Transaction t) =>
             string.Equals(t.Type, "Income", StringComparison.OrdinalIgnoreCase);
     }

@@ -1,2 +1,7 @@
-﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+﻿@* Loads the two client-side validation libraries used across the app:
+   - jquery.validate        : provides the actual validation rules
+   - jquery.validate.unobtrusive : reads the data-val-* attributes that the asp-for
+                                   tag helper emits and wires them to jquery.validate.
+   Order matters: validate must be loaded before unobtrusive. *@
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

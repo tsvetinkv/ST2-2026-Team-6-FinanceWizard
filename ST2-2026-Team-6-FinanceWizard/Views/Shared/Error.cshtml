@@ -3,11 +3,14 @@
     ViewData["Title"] = "Error";
 }
 
+@* Global error page rendered by HomeController.Error().
+   Role="alert" makes screen readers announce the message immediately. *@
 <div class="alert alert-danger mt-4" role="alert">
     <h1 class="h3">Something went wrong</h1>
     <p class="mb-0">An error occurred while processing your request. Please try again later.</p>
 </div>
 
+@* The request id is shown only in development and helps match the message with a server log entry. *@
 @if (Model.ShowRequestId)
 {
     <p class="text-muted">
@@ -16,4 +19,3 @@
 }
 
 <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to home</a>
-

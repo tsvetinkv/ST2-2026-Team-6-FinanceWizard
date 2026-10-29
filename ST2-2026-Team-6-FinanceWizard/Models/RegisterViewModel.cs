@@ -2,6 +2,11 @@
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
+    /// <summary>
+    /// Input model for the registration form.
+    /// Validators mirror the rules in the login / user service:
+    /// required fields, valid email, password ≥ 6 characters, matching confirmation.
+    /// </summary>
     public class RegisterViewModel
     {
         [Required(ErrorMessage = "Name is required.")]

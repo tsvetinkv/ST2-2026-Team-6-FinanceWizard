@@ -2,10 +2,15 @@
 @{
     ViewData["Title"] = "Profile";
 
+    // Derive the avatar from the username when there is no photo:
+    // - first letter, uppercased, or "?" if the name is empty
+    // - a hue in [0, 359] from a simple hash so each user gets a distinct colour
     var name = Model.Username ?? string.Empty;
     var initial = string.IsNullOrWhiteSpace(name) ? "?" : char.ToUpper(name.Trim()[0]).ToString();
     var hue = name.Aggregate(0, (acc, ch) => (acc * 31 + ch) % 360);
 
+    // If the "Delete account" sub-form was the one that failed validation, keep its <details>
+    // section open so the user sees the error instead of a collapsed panel.
     bool deleteHasErrors = ViewData.ModelState
         .Any(kv => kv.Key.StartsWith("DeleteAccount") && kv.Value!.Errors.Count > 0);
 }
@@ -17,6 +22,7 @@
     </div>
 </div>
 
+@* TempData survives the redirect that follows a successful POST, so it can show a success toast here. *@
 @if (TempData["ProfileSuccess"] is string success)
 {
     <div class="alert alert-success fw-profile-toast" role="status">
@@ -28,6 +34,7 @@
 <div class="fw-profile">
 
     @* ================= Left column ================= *@
+    @* Summary card + in-page navigation. aria-label distinguishes this nav from the main navbar. *@
     <aside class="fw-profile-side" aria-label="Profile summary">
         <div class="fw-panel fw-profile-card">
             @if (Model.PhotoUrl != null)
@@ -58,6 +65,10 @@
     <div class="fw-profile-main">
 
         @* ---------- Profile photo ---------- *@
+        @* Two forms on purpose:
+           - "UploadPhoto" replaces the picture (multipart)
+           - "RemovePhoto" only appears when a picture exists, so the user can clear it.
+           Both POST to the controller; the anti-forgery token is rendered by the tag helper. *@
         <section id="photo" class="fw-panel fw-profile-section" aria-labelledby="h-photo">
             <header class="fw-profile-head">
                 <h2 id="h-photo">Profile photo</h2>
@@ -78,6 +89,8 @@
 
                 <div class="fw-photo-controls">
                     <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data">
+                        @* The file input is visually hidden (visually-hidden) and triggered by the label.
+                           This lets us style a normal Bootstrap button as the "Choose image" control. *@
                         <input type="file" name="photo" id="photo-input" class="visually-hidden"
                                accept="image/png,image/jpeg,image/webp" />
                         <label for="photo-input" class="btn btn-secondary fw-btn-sm">Choose image</label>
@@ -97,6 +110,8 @@
         </section>
 
         @* ---------- Sign-in details + username ---------- *@
+        @* Email is display-only. The username has its own form, so a failed validation
+           on one form does not clear the other forms' values. *@
         <section id="account" class="fw-panel fw-profile-section" aria-labelledby="h-account">
             <header class="fw-profile-head">
                 <h2 id="h-account">Sign-in details</h2>
@@ -116,12 +131,15 @@
                     <span asp-validation-for="ChangeUsername.Username" class="fw-error"></span>
                 </div>
                 <div class="fw-profile-actions">
+                    @* Disabled by default; the script below re-enables it only when the value changed. *@
                     <button type="submit" id="btn-username" class="btn btn-primary fw-btn-sm" disabled>Save username</button>
                 </div>
             </form>
         </section>
 
         @* ---------- Password ---------- *@
+        @* Three fields, matching ChangePasswordViewModel. The strength meter is purely cosmetic
+           (it helps the user pick a stronger password) and does not block submission. *@
         <section id="password" class="fw-panel fw-profile-section" aria-labelledby="h-password">
             <header class="fw-profile-head">
                 <h2 id="h-password">Password</h2>
@@ -142,6 +160,7 @@
                     <div class="fw-pw">
                         <input asp-for="ChangePassword.NewPassword" class="form-control" autocomplete="new-password" />
                     </div>
+                    @* Strength meter: four <span> segments + a label. The script below sets data-level 0..4. *@
                     <div class="fw-meter" id="pw-meter" data-level="0" aria-live="polite">
                         <span></span><span></span><span></span><span></span>
                         <em id="pw-meter-text"></em>
@@ -164,6 +183,9 @@
         </section>
 
         @* ---------- Currency ---------- *@
+        @* Radio-card grid: one radio per supported currency. The "Convert and save" button
+           triggers the account controller's ChangeCurrency action. The live preview is filled
+           by the fetch() call in the script below when a user changes the selection. *@
         <section id="currency" class="fw-panel fw-profile-section" aria-labelledby="h-currency">
             <header class="fw-profile-head">
                 <h2 id="h-currency">Main wallet currency</h2>
@@ -178,6 +200,7 @@
                         {
                             var c = CurrencyInfo.All[i];
                             <div class="fw-cur">
+                                @* asp-for here binds to Model.ChangeCurrency.Currency. The value is the ISO code. *@
                                 <input type="radio" asp-for="ChangeCurrency.Currency" value="@c.Code" id="cur-@i" />
                                 <label for="cur-@i">
                                     <span class="fw-cur-symbol">@c.Code</span>
@@ -198,6 +221,7 @@
                     </span>
                 </p>
 
+                @* Live preview: "1 EUR = 1.08 USD. Your main wallet balance of 1,234.00 EUR becomes 1,332.72 USD." *@
                 <p class="fw-fx" id="fx-preview" aria-live="polite"></p>
 
                 <div class="fw-profile-actions">
@@ -207,6 +231,8 @@
         </section>
 
         @* ---------- Delete account ---------- *@
+        @* Inside <details> so it is collapsed by default — only opened when the user
+           actively wants to delete their account, or after a validation error. *@
         <section id="danger" class="fw-panel fw-profile-section fw-danger-zone" aria-labelledby="h-danger">
             <details class="fw-profile-details" @(deleteHasErrors ? "open" : null)>
                 <summary>
@@ -236,6 +262,12 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @* Profile page scripts:
+       - live password-strength meter
+       - "Save username" is only enabled when the field differs from the original
+       - file picker: client-side MIME / size validation + preview
+       - currency picker: fetch the preview rate from Account/ExchangeRate and show it
+       - auto-scroll to the first validation error after a failed POST *@
     <script>
         (function() {
             // Password strength
@@ -282,6 +314,7 @@
                     if (!okType) { fileName.textContent = 'Only JPG, PNG or WebP images are allowed.'; fileInput.value = ''; return; }
                     if (f.size > 2 * 1024 * 1024) { fileName.textContent = 'The image is too large (max 2 MB).'; fileInput.value = ''; return; }
                     fileName.textContent = f.name;
+                    // Replace the avatar preview with the newly picked file.
                     var img = document.createElement('img');
                     img.className = 'fw-profile-photo';
                     img.alt = 'Preview of the selected photo';
@@ -309,6 +342,8 @@
                     }
                     fx.textContent = 'Loading the exchange rate…';
                     curBtn.disabled = true;
+                    // Ask the server for the rate. The "Accept: application/json" header tells
+                    // the controller to return JSON (it returns JSON unconditionally, but this is good practice).
                     fetch('@Url.Action("ExchangeRate", "Account")?to=' + encodeURIComponent(r.value),
                         { headers: { 'Accept': 'application/json' } })
                         .then(function(res) {
@@ -316,6 +351,7 @@
                         })
                         .then(function(r2) {
                             if (!r2.ok) {
+                                // The controller returns { error: "..." } on failure.
                                 var err = new Error('request failed');
                                 err.userMessage = r2.d && r2.d.error;
                                 throw err;

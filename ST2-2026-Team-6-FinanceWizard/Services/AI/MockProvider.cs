@@ -3,6 +3,18 @@ using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services.AI;
 
+/// <summary>
+/// Offline AI provider used when no API key is configured.
+///
+/// Design pattern: STRATEGY (concrete strategy).
+/// - Implements the same IAiProvider interface as GeminiProvider.
+/// - Program.cs selects it at startup based on configuration
+///   (no key → MockProvider, key present → GeminiProvider).
+/// - The rest of the app never knows which provider is active.
+///
+/// Behaviour: pattern-matches a few keywords in the prompt and returns a canned reply,
+/// so the whole feature is demonstrable without external services or credentials.
+/// </summary>
 public class MockProvider : IAiProvider
 {
     public string ProviderName => "Offline Mock Advisor";
@@ -19,6 +31,7 @@ public class MockProvider : IAiProvider
             _ => "Your financial profile looks stable. Keep recording daily transactions and maintaining active budget limits."
         };
 
+        // The [Offline Mode] tag makes it obvious in the UI that this is not a real LLM reply.
         return Task.FromResult($"[Offline Mode] {response}");
     }
 }

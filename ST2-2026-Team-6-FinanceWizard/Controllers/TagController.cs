@@ -8,6 +8,15 @@ using System.Text.RegularExpressions;
 
 namespace ST2_2026_Team_6_FinanceWizard.Controllers;
 
+/// <summary>
+/// CRUD for tags (a many-to-many "labels" dimension of a transaction).
+///
+/// Design patterns used:
+/// - MVC Controller + Repository pattern (IEfRepository{Tag}).
+/// - Tags are linked to transactions through the join entity TransactionTag,
+///   configured with cascade delete in ApplicationDbContext, so deleting a tag
+///   automatically removes its links — no manual cleanup here.
+/// </summary>
 [Authorize]
 public class TagController : Controller
 {
@@ -23,6 +32,9 @@ public class TagController : Controller
         _tagRepository = tagRepository;
     }
 
+    /// <summary>
+    /// GET /Tag — lists all tags, optionally filtered by name.
+    /// </summary>
     public async Task<IActionResult> Index(string? searchName, CancellationToken cancellationToken)
     {
         var query = _tagRepository.All().AsNoTracking();
@@ -37,9 +49,15 @@ public class TagController : Controller
         return View(tags);
     }
 
+    /// <summary>
+    /// GET /Tag/Create — shows the create form with the default colour.
+    /// </summary>
     [HttpGet]
     public IActionResult Create() => View(new Tag { Color = DefaultColor });
 
+    /// <summary>
+    /// POST /Tag/Create — validates and saves a new tag.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("Name,Color,Icon")] Tag tag, CancellationToken cancellationToken)
@@ -56,6 +74,9 @@ public class TagController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// GET /Tag/Edit/{id} — loads a tag into the edit form.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Edit(long id, CancellationToken cancellationToken)
     {
@@ -68,6 +89,9 @@ public class TagController : Controller
         return View(tag);
     }
 
+    /// <summary>
+    /// POST /Tag/Edit/{id} — validates and saves the edited tag.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(long id, [Bind("Name,Color,Icon")] Tag input, CancellationToken cancellationToken)
@@ -90,6 +114,13 @@ public class TagController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// POST /Tag/Delete/{id} — removes the tag.
+    ///
+    /// Unlike categories and merchants, no manual unlinking is needed:
+    /// ApplicationDbContext configures the TransactionTag join table with cascade delete,
+    /// so the database removes the links automatically.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id)
@@ -105,7 +136,10 @@ public class TagController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // Cleans and checks the posted values. Returns false (with errors in ModelState) when invalid.
+    /// <summary>
+    /// Cleans and validates the posted form values.
+    /// Returns false (with errors in ModelState) when invalid.
+    /// </summary>
     private async Task<bool> ApplyFormAsync(Tag tag, long excludeId, CancellationToken cancellationToken)
     {
         ModelState.Remove(nameof(Tag.Name));  // re-validated below after cleaning

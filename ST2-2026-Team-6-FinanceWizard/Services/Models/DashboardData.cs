@@ -2,7 +2,16 @@ using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services.Models;
 
-// Everything the dashboard page needs, produced by IDashboardFacade in one call
+/// <summary>
+/// Everything the dashboard page needs, produced by IDashboardFacade in one call.
+///
+/// Design notes:
+/// - This DTO is a "data bag" with no behaviour. Keeping it separate from the view-model
+///   (HomeDashboardViewModel) means the service layer does not need to know about Razor,
+///   formatting helpers or pre-computed flags like HasChartData.
+/// - The DTO is filled by one method that guarantees the numbers are consistent (same user, same period,
+///   same currency), which would be easy to break if the controller fetched each piece itself.
+/// </summary>
 public class DashboardData
 {
     public List<Wallet> Wallets { get; set; } = new();
@@ -21,7 +30,15 @@ public class DashboardData
     public List<string> AvailableCurrencies { get; set; } = new();
 }
 
-// Headline numbers for the current calendar month (one currency, see StatsService)
+/// <summary>
+/// Headline numbers for the current calendar month (one currency, see StatsService).
+///
+/// Design notes:
+/// - Nullable fields express "not applicable":
+///   • SavingsRatePercent is null when there was no income (percentage of zero is meaningless).
+///   • ExpenseChangePercent is null when last month had no expenses (percentage change from zero is meaningless).
+/// - NetThisMonth is a computed property: it derives from the two amounts, so it can never drift.
+/// </summary>
 public class DashboardKpis
 {
     public string Currency { get; set; } = "EUR";
@@ -36,13 +53,23 @@ public class DashboardKpis
     public decimal? ExpenseChangePercent { get; set; }
 }
 
-// One bar group of the "Income vs. expenses" chart
+/// <summary>
+/// One bar group of the "Income vs. expenses" chart. The Label is pre-formatted ("Oct" / "Jan 27")
+/// so the chart script does not have to worry about month formatting.
+/// </summary>
 public record MonthlyPoint(string Label, decimal Income, decimal Expense);
 
-// One slice of the "Spending by category" chart. Color is "#rrggbb" or null (= automatic colour from Hue)
+/// <summary>
+/// One slice of the "Spending by category" chart. Color is "#rrggbb" or null (= automatic colour from Hue).
+/// Hue is a stable 0-359 value derived from the name; the chart uses it when Color is null,
+/// so each category gets a consistent colour even without a manual choice.
+/// </summary>
 public record CategorySlice(string Name, decimal Total, string? Color, int Hue);
 
-// Result of IStatsService: the chart + KPI numbers of one user
+/// <summary>
+/// Result of IStatsService: the chart + KPI numbers of one user.
+/// The Currency field explains which currency all the numbers are in; the UI must show that.
+/// </summary>
 public class DashboardStats
 {
     public string Currency { get; set; } = "EUR";

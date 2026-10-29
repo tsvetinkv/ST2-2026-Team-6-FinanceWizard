@@ -3,7 +3,15 @@ using System.Text.RegularExpressions;
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
-    // Formats money with a symbol for well-known currencies ("EUR" -> €1,234.00)
+    /// <summary>
+    /// Formats money with a symbol for well-known currencies ("EUR" -> €1,234.00).
+    ///
+    /// Design notes:
+    /// - Static helper class: no state, only pure functions, so no DI needed.
+    /// - Uses InvariantCulture for the number part, so the decimal/thousands separators
+    ///   are consistent regardless of the server's culture.
+    /// - Unknown currencies fall back to "123.45 CODE".
+    /// </summary>
     public static class Money
     {
         private static readonly Dictionary<string, string> Symbols = new(StringComparer.OrdinalIgnoreCase)
@@ -24,11 +32,19 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
         {
             var sym = Symbol(currency);
             var number = amount.ToString("N2", CultureInfo.InvariantCulture);
+            // For a single-character symbol ("€"), attach it directly; for a 3-letter code, add a space.
             return sym.Length == 1 ? sym + number : number + " " + sym;
         }
     }
 
-    // Stable colour (hue 0-359) derived from a name, so every merchant / tag keeps its colour
+    /// <summary>
+    /// Stable colour (hue 0-359) derived from a name, so every merchant / tag keeps its colour.
+    ///
+    /// Design notes:
+    /// - A deterministic hash is used instead of Random, so the same name always gives the same hue.
+    /// - The multiplier 31 is a small prime, which gives a good distribution over 360.
+    /// - Used by CategorySlice and by the avatar/chip style helpers below.
+    /// </summary>
     public static class Hue
     {
         public static int Of(string? text)
@@ -45,6 +61,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
         }
     }
 
+    /// <summary>
+    /// The list of icons offered in the category picker.
+    /// The corresponding CSS classes come from the Bootstrap Icons library.
+    /// </summary>
     public static class CategoryIcons
     {
         public static readonly string[] All =
@@ -52,7 +72,18 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
             "cart", "bolt", "film", "home", "car", "heart", "gift", "coffee", "book", "plane", "tag"
         };
     }
-    // Colours chosen with the colour picker ("#rrggbb"): validation + readable text colour
+
+    /// <summary>
+    /// Colours chosen with the colour picker ("#rrggbb"): validation + readable text colour.
+    ///
+    /// Design notes:
+    /// - Normalize() is the single place that decides "what is a valid colour",
+    ///   used by both CategoryController and TagController.
+    /// - TextOn() implements the WCAG contrast calculation, so a chip's text stays readable
+    ///   whether the background is light or dark.
+    /// - Style() and Class() are helpers consumed by the Razor views to switch between
+    ///   "user picked a colour" and "automatic hue" modes.
+    /// </summary>
     public static class Colors
     {
         private static readonly Regex HexPattern = new("^#[0-9a-fA-F]{6}$", RegexOptions.Compiled);
@@ -84,6 +115,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
         // "has-color" switches the CSS from the automatic hue to the chosen colour
         public static string Class(string? color) => IsHex(color) ? "has-color" : string.Empty;
 
+        // Relative luminance per the WCAG 2.1 formula (0 = black, 1 = white).
         private static double Luminance(string hex)
         {
             double Channel(int value)
