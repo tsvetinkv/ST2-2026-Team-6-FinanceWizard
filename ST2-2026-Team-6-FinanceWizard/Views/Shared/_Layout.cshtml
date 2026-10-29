@@ -1,10 +1,6 @@
-<<<<<<< Updated upstream
 @using System.Security.Claims
-=======
-﻿@using System.Security.Claims
 @* The layout injects IProfilePhotoService to build the navbar avatar URL.
    Views can also inject services — this is a small "seam" without a controller. *@
->>>>>>> Stashed changes
 @inject ST2_2026_Team_6_FinanceWizard.Services.Contracts.IProfilePhotoService Photos
 @{
     string? navPhoto = null;
@@ -18,6 +14,8 @@
     }
 }
 @{
+    // Helper functions for highlighting the active nav link. Both compare case-insensitively
+    // so a change in route casing does not break the "active" state.
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
     bool IsCurrent(string c, string a) => string.Equals(controller, c, StringComparison.OrdinalIgnoreCase)
@@ -32,15 +30,17 @@
     <meta name="color-scheme" content="light dark" />
     <title>@ViewData["Title"] - FinanceWizard</title>
 
+    @* Runs before the body renders so the correct theme is applied without a flash.
+       Reads the user's preference from localStorage, falling back to the OS setting. *@
     <script>
-        (function () {
-            var theme = null;
-            try { theme = localStorage.getItem('fw-theme'); } catch (e) { }
-            if (theme !== 'light' && theme !== 'dark') {
-                theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            }
-            document.documentElement.setAttribute('data-bs-theme', theme);
-        })();
+            (function() {
+                var theme = null;
+                try { theme = localStorage.getItem('fw-theme'); } catch (e) { }
+                if (theme !== 'light' && theme !== 'dark') {
+                    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-bs-theme', theme);
+            })();
     </script>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -48,6 +48,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="d-flex flex-column min-vh-100">
+    @* Skip link for keyboard users: jumps straight to <main id="main">. *@
     <a class="fw-skip-link" href="#main">Skip to main content</a>
 
     <header>
@@ -66,6 +67,8 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="mainNav">
+                    @* Authenticated menu. Each link is only shown when the user is signed in,
+                       because all the sections behind them require [Authorize]. *@
                     <ul class="navbar-nav me-auto">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
@@ -112,6 +115,8 @@
                     <div class="fw-nav-actions">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
+                            @* Avatar link to Profile — shows the photo if the user uploaded one,
+                               otherwise the first letter on the user's personal hue. *@
                             <a class="fw-nav-avatar" asp-controller="Account" asp-action="Profile" aria-label="Profile" title="Profile">
                                 @if (navPhoto != null)
                                 {
@@ -123,6 +128,8 @@
                                 }
                             </a>
 
+                            @* Logout must be POST (with anti-forgery), not a link, so a link-prefetcher
+                               or an accidental click cannot log the user out. *@
                             <form asp-controller="Account" asp-action="Logout" method="post">
                                 <button type="submit" class="fw-nav-logout-btn">Log out</button>
                             </form>
@@ -135,6 +142,9 @@
                             <a class="btn btn-gold btn-sm" asp-controller="Account" asp-action="Register">Register</a>
                         }
 
+                        @* Theme toggle. The icons (moon / sun) are toggled by CSS based on
+                           [data-bs-theme="dark"], so no JS class switching is needed.
+                           The aria-label is updated by the script at the bottom for accessibility. *@
                         <button type="button" id="themeToggle" class="fw-theme-toggle" aria-label="Switch to dark mode" title="Switch theme">
                             <svg class="fw-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                                 <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
@@ -152,6 +162,8 @@
 
     <div class="container flex-grow-1">
         <main id="main" role="main" class="pb-3">
+            @* TempData banners: survive one redirect. Success is role="status" (polite),
+               error is role="alert" (assertive). Both are dismissible. *@
             @if (TempData["SuccessMessage"] is string successMessage)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="status">
@@ -184,31 +196,36 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @* Theme toggle handler:
+       - Switches data-bs-theme and persists the choice in localStorage.
+       - Updates aria-label so a screen reader announces what the button will do next.
+       - Adds "fw-theme-anim" to the <html> for 450 ms to smooth the colour transition. *@
     <script>
-        (function () {
-            var root = document.documentElement;
-            var btn = document.getElementById('themeToggle');
-            if (!btn) return;
+            (function() {
+                var root = document.documentElement;
+                var btn = document.getElementById('themeToggle');
+                if (!btn) return;
 
-            function syncLabel() {
-                var isDark = root.getAttribute('data-bs-theme') === 'dark';
-                var text = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-                btn.setAttribute('aria-label', text);
-                btn.setAttribute('title', text);
-            }
+                function syncLabel() {
+                    var isDark = root.getAttribute('data-bs-theme') === 'dark';
+                    var text = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+                    btn.setAttribute('aria-label', text);
+                    btn.setAttribute('title', text);
+                }
 
-            syncLabel();
-
-            btn.addEventListener('click', function () {
-                var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-                root.classList.add('fw-theme-anim');
-                root.setAttribute('data-bs-theme', next);
-                try { localStorage.setItem('fw-theme', next); } catch (e) { }
                 syncLabel();
-                window.setTimeout(function () { root.classList.remove('fw-theme-anim'); }, 450);
-            });
-        })();
+
+                btn.addEventListener('click', function() {
+                    var next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                    root.classList.add('fw-theme-anim');
+                    root.setAttribute('data-bs-theme', next);
+                    try { localStorage.setItem('fw-theme', next); } catch (e) { }
+                    syncLabel();
+                    window.setTimeout(function() { root.classList.remove('fw-theme-anim'); }, 450);
+                });
+            })();
     </script>
+    @* Password inputs get a "show / hide" toggle, injected by password-toggle.js. *@
     <script src="~/js/password-toggle.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

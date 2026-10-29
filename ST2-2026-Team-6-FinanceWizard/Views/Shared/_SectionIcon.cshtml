@@ -1,30 +1,43 @@
 @model string
 @{
+    // The caller passes a short string ("transactions", "wallets", "spending", ...)
+    // that selects the right SVG icon. Unknown values fall back to a generic circle.
     var key = (Model ?? string.Empty).Trim().ToLowerInvariant();
 }
 <svg class="fw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     @switch (key)
     {
         case "transactions":
-            <path d="M7 7h13M7 7l3-3M7 7l3 3" /><path d="M17 17H4M17 17l-3-3M17 17l-3 3" />
+            <path d="M7 7h13M7 7l3-3M7 7l3 3" />
+            <path d="M17 17H4M17 17l-3-3M17 17l-3 3" />
             break;
         case "wallets":
-            <path d="M3 7a2 2 0 0 1 2-2h13v4" /><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z" /><circle cx="16.5" cy="14.5" r="1" />
+            <path d="M3 7a2 2 0 0 1 2-2h13v4" />
+            <path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z" />
+            <circle cx="16.5" cy="14.5" r="1" />
             break;
         case "merchants":
-            <path d="M3 9l1.5-5h15L21 9" /><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" /><path d="M5 12v8h14v-8" />
+            <path d="M3 9l1.5-5h15L21 9" />
+            <path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" />
+            <path d="M5 12v8h14v-8" />
             break;
         case "categories":
-            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
             break;
         case "tags":
-            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+            <line x1="7" y1="7" x2="7.01" y2="7" />
             break;
         case "spending":
-            <rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20M6 15h4" />
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <path d="M2 10h20M6 15h4" />
             break;
         case "savings":
-            <circle cx="12" cy="12" r="9" /><path d="M12 7v10M9.5 9.5c0-1 1-1.5 2.5-1.5s2.5.5 2.5 1.5-1 1.4-2.5 1.7-2.5.7-2.5 1.8 1 1.5 2.5 1.5 2.5-.5 2.5-1.5" />
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v10M9.5 9.5c0-1 1-1.5 2.5-1.5s2.5.5 2.5 1.5-1 1.4-2.5 1.7-2.5.7-2.5 1.8 1 1.5 2.5 1.5 2.5-.5 2.5-1.5" />
             break;
         default:
             <circle cx="12" cy="12" r="9" />

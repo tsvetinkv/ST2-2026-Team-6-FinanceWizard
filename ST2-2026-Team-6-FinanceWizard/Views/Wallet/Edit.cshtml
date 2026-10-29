@@ -4,8 +4,11 @@
     var walletId = ViewData["WalletId"];
 }
 
+@* Form pre-filled from the wallet, same partial as Create. *@
 <partial name="_WalletForm" model="Model" />
 
+@* Danger zone: a wallet can only be deleted when it has no transactions
+   (WalletService.DeleteWalletAsync throws otherwise, and the controller shows TempData["ErrorMessage"]). *@
 <section class="fw-panel fw-form-card fw-danger-zone" aria-labelledby="delete-wallet-h">
     <h2 id="delete-wallet-h">Delete this wallet</h2>
     <p>A wallet can only be deleted when it has no transactions. Delete its transactions first.</p>

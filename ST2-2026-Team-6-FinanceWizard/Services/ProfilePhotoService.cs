@@ -4,7 +4,13 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 {
     /// <summary>
     /// Stores one profile photo per user as wwwroot/uploads/avatars/{userId}.{ext}.
-    /// The file type is checked by its first bytes, not by the file name.
+    ///
+    /// Design notes:
+    /// - Filename is the user's ID, so "replace" is automatic: SaveAsync calls Delete(userId) first.
+    /// - File type is detected from the first bytes (magic bytes), not from the client's
+    ///   Content-Type or the filename extension — both are attacker-controlled.
+    /// - GetUrl() appends "?v={lastWriteTime}" to defeat browser caching after a replace.
+    /// - Only JPG, PNG and WebP are accepted (no GIF: animated avatars are usually a bad UX).
     /// </summary>
     public class ProfilePhotoService : IProfilePhotoService
     {
@@ -20,6 +26,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             Directory.CreateDirectory(_folder);
         }
 
+        /// <summary>
+        /// Returns the URL of the user's photo, or null if they don't have one.
+        /// The ?v= query string changes when the file changes, which forces the browser to re-fetch it.
+        /// </summary>
         public string? GetUrl(long userId)
         {
             foreach (var ext in Extensions)
@@ -31,11 +41,16 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             return null;
         }
 
+        /// <summary>
+        /// Saves a new photo, replacing any existing one.
+        /// Returns null on success, or an error message for the form.
+        /// </summary>
         public async Task<string?> SaveAsync(long userId, IFormFile file)
         {
             if (file.Length == 0) return "Choose an image first.";
             if (file.Length > MaxBytes) return "The image is too large. The maximum size is 2 MB.";
 
+            // Read just the first 12 bytes to detect the type.
             var header = new byte[12];
             int read;
             await using (var stream = file.OpenReadStream())
@@ -44,7 +59,8 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             var ext = read == header.Length ? DetectExtension(header) : null;
             if (ext == null) return "Only JPG, PNG or WebP images are allowed.";
 
-            Delete(userId); // remove the previous photo (it may have another extension)
+            // Replace: remove the previous file, whatever extension it had.
+            Delete(userId);
 
             await using var fs = new FileStream(Path.Combine(_folder, userId + ext), FileMode.Create);
             await file.CopyToAsync(fs);
@@ -53,10 +69,14 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
         public void Delete(long userId)
         {
+            // File.Delete is a no-op when the file does not exist, so no "if exists" check is needed.
             foreach (var ext in Extensions)
-                File.Delete(Path.Combine(_folder, userId + ext)); // no error if missing
+                File.Delete(Path.Combine(_folder, userId + ext));
         }
 
+        /// <summary>
+        /// Magic-byte signature detection for the three supported formats.
+        /// </summary>
         private static string? DetectExtension(byte[] h)
         {
             if (h[0] == 0xFF && h[1] == 0xD8 && h[2] == 0xFF) return ".jpg";

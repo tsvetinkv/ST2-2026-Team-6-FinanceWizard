@@ -1,10 +1,18 @@
 ﻿namespace ST2_2026_Team_6_FinanceWizard.Repositories
 {
     /// <summary>
-    /// Дизайн патърн: DECORATOR.
-    /// Обвива EfRepository<T> през същия интерфейс IEfRepository<T> и добавя
-    /// логване на всички операции по запис, без да променя EfRepository или услугите.
-    /// Регистриран в Program.cs като имплементация на IEfRepository<T>.
+    /// Design pattern: DECORATOR.
+    /// Wraps EfRepository{T} through the same interface IEfRepository{T} and adds
+    /// logging to all write operations, without changing EfRepository or the services.
+    /// Registered in Program.cs as the implementation of IEfRepository{T}.
+    ///
+    /// How it works:
+    /// - Constructor takes an EfRepository{T} (the "inner" object) and an ILogger.
+    /// - Every method delegates to the inner repository; the write methods additionally log.
+    /// - Consumers see exactly IEfRepository{T} — they do not know (and do not care)
+    ///   whether they are talking to EfRepository or LoggingRepository.
+    /// - The decorator is registered in DI as the IEfRepository{T} implementation,
+    ///   so every service automatically gets logging.
     /// </summary>
     public class LoggingRepository<T> : IEfRepository<T> where T : class
     {
@@ -17,10 +25,12 @@
             _logger = logger;
         }
 
+        // Reads are passed through untouched — logging reads would be too noisy.
         public IQueryable<T> All() => _inner.All();
 
         public Task<T?> GetByIdAsync(object id) => _inner.GetByIdAsync(id);
 
+        // Write operations are logged before/after they run.
         public async Task AddAsync(T entity)
         {
             _logger.LogInformation("Add {Entity}", typeof(T).Name);

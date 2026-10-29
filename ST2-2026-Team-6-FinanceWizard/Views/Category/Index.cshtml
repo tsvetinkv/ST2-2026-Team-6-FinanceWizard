@@ -5,6 +5,7 @@
     var search = ViewData["SearchName"] as string;
 }
 
+@* Page header with a count badge and the "Add category" primary action. *@
 <div class="fw-page-head">
     <div>
         <h1 class="fw-page-title">Categories<span class="fw-count-badge">@categories.Count</span></h1>
@@ -16,6 +17,8 @@
     </a>
 </div>
 
+@* Search form. Method GET: the query string keeps the search after a refresh or back navigation.
+   The <input> preserves its value via the value="@search" so the field is not cleared. *@
 <form method="get" asp-action="Index" class="fw-panel fw-filter" role="search" aria-label="Search categories">
     <div class="fw-filter-field fw-filter-search">
         <label for="searchName" class="fw-label">Search</label>
@@ -29,6 +32,8 @@
 
 @if (categories.Any())
 {
+    @* Card grid: one card per category. Colours come from Colors.Style / Colors.Class,
+       which handle both user-chosen colours (#rrggbb) and the automatic hue derived from the name. *@
     <div class="fw-card-grid">
         @foreach (var item in categories)
         {
@@ -44,6 +49,8 @@
                     <a asp-action="Edit" asp-route-id="@item.Id" class="fw-icon-btn" title="Edit category" aria-label="Edit category @item.Name">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
                     </a>
+                    @* Delete is POST, never GET, so a link-prefetcher cannot delete data.
+                       The onsubmit confirmation gives the user a chance to cancel. *@
                     <form asp-action="Delete" asp-route-id="@item.Id" method="post"
                           onsubmit="return confirm('Delete this category? Transactions in it keep their amount and date but lose the category.');">
                         <button type="submit" class="fw-icon-btn is-danger" title="Delete category" aria-label="Delete category @item.Name">
@@ -57,6 +64,8 @@
 }
 else
 {
+    @* Empty state: two variants — "no matches for the search" vs "nothing at all".
+       Each has its own CTA so the user knows what to do next. *@
     <section class="fw-panel">
         <div class="fw-empty">
             <partial name="_SectionIcon" model="@("categories")" />

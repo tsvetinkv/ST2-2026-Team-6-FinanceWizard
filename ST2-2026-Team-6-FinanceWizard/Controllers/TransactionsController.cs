@@ -10,6 +10,17 @@ using System.Security.Claims;
 
 namespace ST2_2026_Team_6_FinanceWizard.Controllers
 {
+    /// <summary>
+    /// CRUD for transactions plus the AI category-suggestion endpoint.
+    ///
+    /// Design patterns used:
+    /// - MVC Controller + Repository pattern.
+    /// - Builder pattern: TransactionQueryBuilder assembles the LINQ query step by step
+    ///   (filter by user → date range → text → include related entities → order).
+    ///   This keeps complex query composition readable and testable.
+    /// - Strategy pattern: ITransactionService encapsulates the balance-update logic,
+    ///   so the controller does not have to know how to mutate Wallet.Balance consistently.
+    /// </summary>
     [Authorize]
     public class TransactionsController : Controller
     {
@@ -43,6 +54,14 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
 
         private long GetUserId() => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+        /// <summary>
+        /// GET /Transactions — paginated and filterable list of the current user's transactions.
+        ///
+        /// The query is composed with TransactionQueryBuilder (Builder pattern):
+        /// each chained call adds one condition to the underlying LINQ query.
+        /// The query is translated to SQL by EF Core, so filtering and paging
+        /// happen in the database — only the current page is loaded into memory.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Index(TransactionListViewModel filter, int page = 1)
         {
@@ -58,7 +77,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
                 .OrderByDescendingDate()
                 .Build();
 
-            int totalItems = await query.CountAsync();
+            int totalItems = await query.CountAsync(); // another SQL round-trip, only a COUNT(*)
             filter.Transactions = await query.Skip((page - 1) * PageSize).Take(PageSize).ToListAsync();
             filter.CurrentPage = page;
             filter.TotalPages = (int)Math.Ceiling(totalItems / (double)PageSize);
@@ -68,6 +87,9 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             return View(filter);
         }
 
+        /// <summary>
+        /// GET /Transactions/Create — shows the transaction form, pre-selecting the spending wallet.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -81,6 +103,13 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// POST /Transactions/Create — validates and persists a new transaction.
+        ///
+        /// All business rules (wallet ownership, sufficient balance, references exist)
+        /// live in TransactionService, so the controller only has to catch
+        /// InvalidOperationException and display the message.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(TransactionCreateViewModel model)
@@ -116,8 +145,15 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             }
         }
 
-        // GET /Transactions/SuggestCategory?description=Starbucks&merchantId=3
-        // Used by the transaction form to pre-select a category while the user types.
+        /// <summary>
+        /// GET /Transactions/SuggestCategory — AI-assisted category suggestion.
+        ///
+        /// Called by JavaScript in the transaction form as the user types.
+        /// The controller resolves the merchant name (the service works with names, not ids)
+        /// and delegates the actual suggestion to IAiCategoryService.
+        ///
+        /// Response cache is disabled so each keystroke gets fresh analysis.
+        /// </summary>
         [HttpGet]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> SuggestCategory(string? description, long? merchantId, CancellationToken cancellationToken)
@@ -128,14 +164,17 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
                 merchantName = await _merchantRepo.All()
                     .AsNoTracking()
                     .Where(m => m.Id == merchantId.Value)
-                    .Select(m => m.Name)
+                    .Select(m => m.Name) // project only the name, not the whole entity
                     .FirstOrDefaultAsync(cancellationToken);
             }
 
             var suggestion = await _aiCategoryService.SuggestAsync(GetUserId(), description, merchantName, cancellationToken);
-            return Json(suggestion);
+            return Json(suggestion); // serialised to JSON for the client script
         }
 
+        /// <summary>
+        /// GET /Transactions/Edit/{id} — loads an existing transaction into the form.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Edit(long id)
         {
@@ -159,6 +198,12 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// POST /Transactions/Edit/{id} — applies the edits.
+        ///
+        /// The balance-correction logic (remove original from old wallet, apply new amount
+        /// to new wallet, refuse if the result would go negative) lives in TransactionService.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(long id, TransactionCreateViewModel model)
@@ -197,6 +242,12 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             }
         }
 
+        /// <summary>
+        /// POST /Transactions/Delete/{id} — deletes the transaction and reverses its balance effect.
+        ///
+        /// Accepts an optional returnUrl so the user is sent back to the same
+        /// page and filters they were on. Only local URLs are allowed (open-redirect protection).
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(long id, string? returnUrl)
@@ -221,7 +272,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Loads the wallets / merchants / categories / tags shown in the form
+        /// <summary>
+        /// Fills the dropdown / checkbox lists used by the transaction form.
+        /// These are never posted back — they are decorated with [ValidateNever].
+        /// </summary>
         private async Task PopulateOptionsAsync(TransactionCreateViewModel model)
         {
             model.Wallets = await _walletService.GetAllByUserIdAsync(GetUserId());

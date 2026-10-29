@@ -3,9 +3,11 @@
     ViewData["Title"] = "Add merchant";
 }
 
+@* Same partial as Edit; the controller sets ViewData["MerchantId"] only in Edit. *@
 <partial name="_MerchantForm" model="Model" />
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    @* fw-pickers.js: live name preview + file type / size check for the logo upload. *@
     <script src="~/js/fw-pickers.js" asp-append-version="true"></script>
 }

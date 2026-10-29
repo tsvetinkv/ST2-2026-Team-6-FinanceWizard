@@ -3,8 +3,14 @@
     ViewData["Title"] = "Log in";
 }
 
+@* Layout:
+   - Two-column card on desktop (aside on the left for the value pitch, form on the right).
+   - The aside collapses on smaller screens (d-none d-lg-flex).
+   - The form posts to AccountController.Login; the anti-forgery token is injected automatically by the tag helper. *@
 <div class="fw-auth-shell">
     <div class="row g-0">
+        @* Left-hand marketing column — hidden on mobile. aria-hidden="false" is explicit
+           because everything inside is decorative, so screen readers get an empty aside. *@
         <aside class="col-lg-5 d-none d-lg-flex fw-auth-aside" aria-hidden="false">
             <h2 class="mb-3">Welcome back</h2>
             <p class="mb-0">Pick up right where you left off and keep every euro accounted for.</p>
@@ -24,11 +30,16 @@
             </ul>
         </aside>
 
+        @* Right-hand form column.
+           - aria-labelledby links the <section> to its <h1> for screen readers.
+           - novalidate disables the browser's native validation so the server-side rules are the source of truth. *@
         <section class="col-lg-7 fw-auth-main" aria-labelledby="login-heading">
             <h1 id="login-heading" class="mb-1">Log in</h1>
             <p class="fw-auth-sub mb-4">Enter your credentials to access your wallet.</p>
 
             <form asp-action="Login" method="post" novalidate>
+                @* ModelOnly: shows business-level errors (e.g. "Invalid email or password")
+                   that are not attached to a specific field. *@
                 <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 
                 <div class="fw-field">
@@ -36,6 +47,8 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
                     </span>
                     <div class="form-floating">
+                        @* asp-for wires the input to the model: name, id, validation attributes,
+                           and the value on re-render after a failed POST. *@
                         <input asp-for="Email" class="form-control" placeholder="name@example.com" autocomplete="email" />
                         <label asp-for="Email"></label>
                     </div>
@@ -65,5 +78,6 @@
 </div>
 
 @section Scripts {
+    @* Loads jQuery validation + unobtrusive validation so the client-side rules mirror the server-side ones. *@
     <partial name="_ValidationScriptsPartial" />
 }

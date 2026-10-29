@@ -1,6 +1,216 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
+    bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+@* Privacy policy. The content describes what the app actually stores and sends:
+   if a feature changes how data is collected or shared, update the matching section here. *@
+<div class="fw-page-head">
+    <div>
+        <h1 class="fw-page-title">Privacy Policy</h1>
+        <p class="fw-page-sub">Last updated: 30 October 2026</p>
+    </div>
+</div>
+
+<div class="fw-privacy">
+    <nav class="fw-panel fw-privacy-toc" aria-labelledby="toc-heading">
+        <h2 id="toc-heading" class="fw-privacy-toc-title">On this page</h2>
+        <ol>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#data-we-collect">Data we collect</a></li>
+            <li><a href="#how-we-use">How we use your data</a></li>
+            <li><a href="#ai-advisor">AI Advisor</a></li>
+            <li><a href="#third-parties">Third-party services</a></li>
+            <li><a href="#cookies">Cookies &amp; local storage</a></li>
+            <li><a href="#security">Security</a></li>
+            <li><a href="#retention">Retention &amp; deletion</a></li>
+            <li><a href="#your-rights">Your rights</a></li>
+            <li><a href="#changes">Changes &amp; contact</a></li>
+        </ol>
+    </nav>
+
+    <div class="fw-privacy-body">
+        <section id="overview" class="fw-panel fw-privacy-section" aria-labelledby="overview-heading">
+            <h2 id="overview-heading">1. Overview</h2>
+            <p>
+                FinanceWizard is a personal finance tracker. This policy explains what information the app stores
+                about you, why, who it is shared with, and how you can remove it. We collect only what is needed
+                to run the features you use. We do not sell your data and we do not show advertising.
+            </p>
+        </section>
+
+        <section id="data-we-collect" class="fw-panel fw-privacy-section" aria-labelledby="collect-heading">
+            <h2 id="collect-heading">2. Data we collect</h2>
+            <dl class="fw-privacy-list">
+                <dt>Account details</dt>
+                <dd>Your username, email address and password. The password is stored only as a one-way BCrypt hash; we never store or see the plain text.</dd>
+
+                <dt>Financial records you enter</dt>
+                <dd>Wallets (name, type, currency, balance) and transactions (amount, date, type, description, and the category, merchant and tags you link to them).</dd>
+
+                <dt>Shared lists</dt>
+                <dd>Categories, merchants (including their logos) and tags are shared by everyone who uses this instance of the app. Anything you add to these lists can be seen and used by other users, so do not put personal information in their names.</dd>
+
+                <dt>Images you upload</dt>
+                <dd>An optional profile photo, and merchant logos that you upload or ask the app to download from a web address you provide.</dd>
+
+                <dt>Technical data</dt>
+                <dd>Standard server logs (for example, errors and request information) used to keep the service running and to fix problems.</dd>
+            </dl>
+            <p class="fw-privacy-note">
+                FinanceWizard does not connect to your bank and never asks for card numbers, bank account numbers or bank login details.
+                Everything in the app is data you type in yourself.
+            </p>
+        </section>
+
+        <section id="how-we-use" class="fw-panel fw-privacy-section" aria-labelledby="use-heading">
+            <h2 id="use-heading">3. How we use your data</h2>
+            <ul>
+                <li>To sign you in and keep your account secure.</li>
+                <li>To show your wallets, transactions, dashboard statistics and charts.</li>
+                <li>To suggest a category for a transaction based on its description and merchant.</li>
+                <li>To convert amounts between currencies.</li>
+                <li>To answer your questions in the AI Advisor, when you choose to use it.</li>
+            </ul>
+            <p>Your data is never used for advertising, profiling or sold to anyone.</p>
+        </section>
+
+        <section id="ai-advisor" class="fw-panel fw-privacy-section" aria-labelledby="ai-heading">
+            <h2 id="ai-heading">4. AI Advisor</h2>
+            <p>
+                When you send a message to the AI Advisor, your question is sent to Google Gemini to generate a reply.
+                If you tick the option to include your transactions, the 10 most recent transactions are also sent, with only
+                their <strong>date, amount, currency, type (income or expense) and description</strong>.
+                Your name, username, email and account ID are never included.
+            </p>
+            <p>
+                Please avoid typing personal or sensitive details (such as account numbers or passwords) into the Advisor or
+                into transaction descriptions you plan to share with it.
+            </p>
+            <p>
+                The chat history is kept only in your browser session on our server and is cleared after 30 minutes of inactivity.
+                It is not saved to our database.
+            </p>
+        </section>
+
+        <section id="third-parties" class="fw-panel fw-privacy-section" aria-labelledby="third-heading">
+            <h2 id="third-heading">5. Third-party services</h2>
+            <div class="fw-table-wrap">
+                <table class="table fw-privacy-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Service</th>
+                            <th scope="col">Purpose</th>
+                            <th scope="col">Data sent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Google Gemini API</td>
+                            <td>AI Advisor replies</td>
+                            <td>Your question and, if you opt in, up to 10 recent transactions as described above</td>
+                        </tr>
+                        <tr>
+                            <td>Frankfurter (frankfurter.dev)</td>
+                            <td>Exchange rates</td>
+                            <td>Currency codes only, no personal data</td>
+                        </tr>
+                        <tr>
+                            <td>Logo websites you choose</td>
+                            <td>Downloading a merchant logo</td>
+                            <td>A request to the web address you enter; no personal data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>Each provider handles data under its own privacy policy.</p>
+        </section>
+
+        <section id="cookies" class="fw-panel fw-privacy-section" aria-labelledby="cookies-heading">
+            <h2 id="cookies-heading">6. Cookies &amp; local storage</h2>
+            <p>We use only what is needed for the app to work. There are no analytics or advertising cookies.</p>
+            <div class="fw-table-wrap">
+                <table class="table fw-privacy-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Purpose</th>
+                            <th scope="col">Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Authentication cookie</td>
+                            <td>Keeps you signed in</td>
+                            <td>Up to 7 days, or until you log out</td>
+                        </tr>
+                        <tr>
+                            <td>Session cookie</td>
+                            <td>Holds the AI Advisor chat history</td>
+                            <td>30 minutes of inactivity</td>
+                        </tr>
+                        <tr>
+                            <td>Anti-forgery cookie</td>
+                            <td>Protects forms against cross-site request forgery</td>
+                            <td>Browser session</td>
+                        </tr>
+                        <tr>
+                            <td><code>fw-theme</code> (local storage)</td>
+                            <td>Remembers your light / dark theme choice</td>
+                            <td>Until you clear your browser data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="security" class="fw-panel fw-privacy-section" aria-labelledby="security-heading">
+            <h2 id="security-heading">7. Security</h2>
+            <ul>
+                <li>Passwords are hashed with BCrypt.</li>
+                <li>Connections are served over HTTPS.</li>
+                <li>Cookies are HTTP-only, so page scripts cannot read them.</li>
+                <li>Every page with your data requires you to be signed in, and only you can see your wallets and transactions.</li>
+            </ul>
+            <p>No system is perfectly secure, but we take reasonable steps to protect your information.</p>
+        </section>
+
+        <section id="retention" class="fw-panel fw-privacy-section" aria-labelledby="retention-heading">
+            <h2 id="retention-heading">8. Retention &amp; deletion</h2>
+            <p>
+                We keep your data for as long as your account exists. When you delete your account from your
+                @if (isAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Profile">profile page</a>
+                }
+                else
+                {
+                    <text>profile page</text>
+                },
+                your account, your wallets, your transactions and your profile photo are permanently removed.
+                Deletion cannot be undone. Categories, merchants and tags are shared lists, so they stay in the app
+                after your account is deleted.
+            </p>
+        </section>
+
+        <section id="your-rights" class="fw-panel fw-privacy-section" aria-labelledby="rights-heading">
+            <h2 id="rights-heading">9. Your rights</h2>
+            <p>Depending on where you live (for example, under the EU GDPR), you have the right to:</p>
+            <ul>
+                <li><strong>Access</strong> the data we hold about you, all of which is visible in the app.</li>
+                <li><strong>Correct</strong> it by editing your profile, wallets and transactions.</li>
+                <li><strong>Delete</strong> it by removing records or deleting your account.</li>
+                <li><strong>Object</strong> to AI processing by not using the AI Advisor, or by leaving your transactions out of it.</li>
+            </ul>
+        </section>
+
+        <section id="changes" class="fw-panel fw-privacy-section" aria-labelledby="changes-heading">
+            <h2 id="changes-heading">10. Changes &amp; contact</h2>
+            <p>
+                If this policy changes, we will update this page and the "Last updated" date at the top.
+                FinanceWizard is developed by ST2 2026 Team 6. If you have questions about your data,
+                please contact the team that operates this instance of the app.
+            </p>
+        </section>
+    </div>
+</div>

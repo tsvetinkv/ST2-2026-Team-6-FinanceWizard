@@ -3,6 +3,8 @@
     ViewData["Title"] = "Edit transaction";
 }
 
+@* Same partial as Create. The controller sets ViewData["TransactionId"],
+   so the form posts to the Edit action with the right id. *@
 <partial name="_TransactionForm" model="Model" />
 
 @section Scripts {

@@ -1,27 +1,41 @@
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using ST2_2026_Team_6_FinanceWizard.Repositories;
 using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 using ST2_2026_Team_6_FinanceWizard.Services.Models;
+using System.Text.RegularExpressions;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services
 {
-    // Rule-based "AI" category suggestion. It works in two steps:
-    //   1. History  - the user already categorised a transaction with the same description (or merchant):
-    //                 reuse the category they chose most often.
-    //   2. Keywords - well-known shops / services ("Starbucks", "Uber", "Billa", ...) are mapped to a general
-    //                 concept (Food & Coffee, Transport, Groceries, ...). The concept is then matched
-    //                 against the names of the user's own categories.
-    // The interface makes it easy to replace this class with a real LLM call later.
+    /// <summary>
+    /// Rule-based "AI" category suggestion.
+    ///
+    /// Algorithm (two steps):
+    ///   1. History  — the user already categorised a transaction with the same description
+    ///                 (or merchant). Reuse the category they chose most often.
+    ///   2. Keywords — well-known shops / services ("Starbucks", "Uber", "Billa", ...) are mapped
+    ///                 to a general concept (Food & Coffee, Transport, Groceries, ...). The concept
+    ///                 is then matched against the names of the user's own categories.
+    ///
+    /// Design patterns used:
+    /// - Strategy pattern: this class implements IAiCategoryService. A real LLM-based implementation
+    ///   could be swapped in via DI without changing the controller.
+    /// - Rule-based reasoning (a simple rules engine): Rules is a static, declarative
+    ///   list of concepts + keywords. Adding a new keyword is a one-line change, no logic edits.
+    ///
+    /// The interface is also what makes it easy to replace this class with a real LLM call later.
+    /// </summary>
     public class AiCategoryService : IAiCategoryService
     {
+        // Hard cap on input length (defence against absurd long descriptions).
         private const int MaxTextLength = 500;
 
         // Concept = general idea; Aliases = category names that fit it, best first;
         // Keywords = words in a description / merchant name that point to it
         private sealed record Rule(string Concept, string[] Aliases, string[] Keywords);
 
+        // The rules engine: a declarative list. Aliases are matched against the user's own
+        // category names, keywords against the description and merchant name.
         private static readonly Rule[] Rules =
         {
             new("Food & Coffee",
@@ -98,6 +112,11 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             _transactionRepo = transactionRepo;
         }
 
+        /// <summary>
+        /// Returns the best category suggestion for the given description / merchant.
+        /// Step 1 (history) wins over step 2 (keywords), because the user's own past choices
+        /// are more authoritative than generic rules.
+        /// </summary>
         public async Task<CategorySuggestion> SuggestAsync(
             long userId,
             string? description,
@@ -131,6 +150,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
         // ---------------------------------------------------------------- history
 
+        /// <summary>
+        /// Looks up the most-used category among the user's past transactions
+        /// that had the same description (or the same merchant).
+        /// </summary>
         private async Task<CategorySuggestion?> SuggestFromHistoryAsync(
             long userId, string desc, string merchant, List<Category> categories, CancellationToken ct)
         {
@@ -147,6 +170,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 query = query.Where(t => t.Merchant != null && t.Merchant.Name == merchant);
             }
 
+            // Group-by in SQL, returning only the top category id and its count.
             var top = await query
                 .GroupBy(t => t.CategoryId)
                 .Select(g => new { CategoryId = g.Key, Count = g.Count() })
@@ -159,6 +183,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 return null;
             }
 
+            // Confidence starts at 0.9 and grows slightly with the number of past uses.
             double confidence = Math.Min(0.99, 0.9 + Math.Min(top.Count, 5) * 0.01);
             return new CategorySuggestion(
                 category.Id,
@@ -173,6 +198,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
         // ---------------------------------------------------------------- keywords
 
+        /// <summary>
+        /// Scores every rule against the text and returns the best match.
+        /// A longer keyword is considered more specific, so matches are ordered by keyword length.
+        /// </summary>
         private static CategorySuggestion SuggestFromKeywords(string desc, string merchant, List<Category> categories)
         {
             string descText = Normalize(desc);
@@ -196,6 +225,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 return CategorySuggestion.None;
             }
 
+            // Sort by: longest keyword first, then rule order (stable).
             var ordered = matches.OrderByDescending(m => m.Keyword.Length).ThenBy(m => m.Order).ToList();
 
             foreach (var m in ordered)
@@ -206,6 +236,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                     continue;
                 }
 
+                // Merchant matches are slightly more reliable than description matches.
                 double confidence = m.FromMerchant ? 0.85 : 0.8;
                 if (aliasIndex > 0) confidence -= 0.1; // the user's category is only a looser fit for the concept
 
@@ -229,7 +260,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 $"\"{first.Keyword}\" usually belongs to {first.Rule.Concept}.");
         }
 
-        // Longest keyword of the rule that occurs in the (normalised) text
+        /// <summary>
+        /// Finds the longest keyword of the rule that occurs in the (already normalised) text.
+        /// Short keywords must match whole words; long ones may match a word start.
+        /// </summary>
         private static string? LongestMatch(Rule rule, string text)
         {
             if (text.Length == 0) return null;
@@ -253,7 +287,11 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             return best;
         }
 
-        // Finds the user's category that best fits a rule: exact alias name first, then shared words
+        /// <summary>
+        /// Finds the user's category that best fits a rule:
+        /// 1. exact alias name (case-insensitive, punctuation removed),
+        /// 2. shared words between the alias and the category name.
+        /// </summary>
         private static (Category? Category, int AliasIndex) Resolve(Rule rule, List<Category> categories)
         {
             Category? bestCategory = null;
@@ -271,10 +309,12 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                     int score = 0;
                     if (Squash(category.Name) == aliasSquashed)
                     {
+                        // Exact name match is best; earlier aliases are preferred.
                         score = 1000 - i;
                     }
                     else if (Tokens(category.Name).Overlaps(aliasTokens))
                     {
+                        // Some shared word (e.g. "food" in "Food & Coffee" and "Food & Drink").
                         score = 500 - i;
                     }
 

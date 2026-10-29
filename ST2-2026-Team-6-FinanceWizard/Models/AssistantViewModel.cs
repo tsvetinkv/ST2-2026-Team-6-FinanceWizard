@@ -3,6 +3,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ST2_2026_Team_6_FinanceWizard.Models;
 
+/// <summary>
+/// View-model for the AI assistant page.
+///
+/// Design notes:
+/// - Uses data annotations for client + server validation.
+/// - IncludeTransactions toggles whether the recent transactions are added to the prompt.
+/// - ConversationHistory is populated by the controller from session data.
+/// </summary>
 public sealed class AssistantViewModel
 {
     [Required(ErrorMessage = "Please, enter your question.")]
@@ -18,6 +26,9 @@ public sealed class AssistantViewModel
     public string? ErrorMessage { get; set; }
 }
 
+/// <summary>
+/// One turn in the conversation. Sender is either "User" or "AI".
+/// </summary>
 public sealed class ChatMessageDto
 {
     public string Sender { get; set; } = string.Empty; // "User" or "AI"

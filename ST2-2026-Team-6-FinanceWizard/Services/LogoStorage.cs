@@ -1,9 +1,21 @@
+using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 using System.Net;
 using System.Net.Sockets;
-using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services;
 
+/// <summary>
+/// Saves merchant logos to wwwroot/uploads/merchants.
+///
+/// Design notes:
+/// - Handles BOTH uploads and remote links behind one interface (ILogoStorage),
+///   so the MerchantController does not need to know the difference.
+/// - File type is decided by magic bytes, never by the filename or the browser's Content-Type.
+/// - Downloading from a link is protected against SSRF: the host is resolved to an IP
+///   and refused if it points to a private / loopback / link-local address.
+/// - HTTP redirects are NOT followed, because a redirect could hop to an internal address.
+/// - All files are stored under a random GUID name, so the original (possibly unsafe) filename never touches disk.
+/// </summary>
 public sealed class LogoStorage : ILogoStorage
 {
     public const long MaxBytes = 2 * 1024 * 1024; // 2 MB
@@ -25,6 +37,9 @@ public sealed class LogoStorage : ILogoStorage
 
     private string FolderPath => Path.Combine(_environment.WebRootPath, "uploads", "merchants");
 
+    /// <summary>
+    /// Saves an uploaded file after checking size and file type.
+    /// </summary>
     public async Task<LogoResult> SaveUploadAsync(IFormFile file, CancellationToken cancellationToken)
     {
         if (file.Length <= 0) return LogoResult.Fail("The selected file is empty.");
@@ -37,6 +52,9 @@ public sealed class LogoStorage : ILogoStorage
         return await SaveBytesAsync(bytes, cancellationToken);
     }
 
+    /// <summary>
+    /// Downloads an image from a public web address and saves it locally.
+    /// </summary>
     public async Task<LogoResult> DownloadFromLinkAsync(string link, CancellationToken cancellationToken)
     {
         // Only plain web addresses. The server must not be pointed at local or internal addresses.
@@ -46,6 +64,7 @@ public sealed class LogoStorage : ILogoStorage
             return LogoResult.Fail("Please enter a full web address that starts with https://");
         }
 
+        // SSRF protection: refuse hosts that resolve to private / internal IPs.
         var addressCheck = await IsPublicAddressAsync(uri.Host, cancellationToken);
         if (addressCheck == AddressCheck.Private)
         {
@@ -72,6 +91,7 @@ public sealed class LogoStorage : ILogoStorage
                     "Check that the link opens the picture itself.");
             }
 
+            // If the server tells us the size upfront, we can reject before downloading.
             if (response.Content.Headers.ContentLength is long length && length > MaxBytes)
             {
                 return LogoResult.Fail("The image behind that link is larger than 2 MB.");
@@ -85,6 +105,7 @@ public sealed class LogoStorage : ILogoStorage
         }
         catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
+            // The HttpClient timeout fired (not a user-initiated cancellation).
             return LogoResult.Fail("The image server took too long to answer. Try again or upload the photo instead.");
         }
         catch (HttpRequestException)
@@ -93,6 +114,9 @@ public sealed class LogoStorage : ILogoStorage
         }
     }
 
+    /// <summary>
+    /// Deletes a logo file, safely (only the file name is used, never the full path).
+    /// </summary>
     public void Delete(string? logoPath)
     {
         if (string.IsNullOrWhiteSpace(logoPath)) return;
@@ -123,6 +147,10 @@ public sealed class LogoStorage : ILogoStorage
         return LogoResult.Ok(RelativeFolder + "/" + fileName);
     }
 
+    /// <summary>
+    /// Reads the stream but returns null as soon as the total exceeds MaxBytes.
+    /// This is what makes the "size check" safe even for chunked responses without Content-Length.
+    /// </summary>
     private static async Task<byte[]?> ReadLimitedAsync(Stream stream, CancellationToken cancellationToken)
     {
         using var buffer = new MemoryStream();
@@ -136,6 +164,9 @@ public sealed class LogoStorage : ILogoStorage
         return buffer.ToArray();
     }
 
+    /// <summary>
+    /// Magic-byte signature detection: file type is confirmed by content, not by extension.
+    /// </summary>
     private static string? DetectExtension(byte[] b)
     {
         if (b.Length >= 8 && b[0] == 0x89 && b[1] == 0x50 && b[2] == 0x4E && b[3] == 0x47) return ".png";
@@ -148,9 +179,12 @@ public sealed class LogoStorage : ILogoStorage
 
     private enum AddressCheck { Public, Private, Unknown }
 
+    /// <summary>
+    /// SSRF guard: returns Private if the host is (or resolves to) a non-public address.
+    /// </summary>
     private static async Task<AddressCheck> IsPublicAddressAsync(string host, CancellationToken cancellationToken)
     {
-        var literal = host.Trim('[', ']');
+        var literal = host.Trim('[', ']'); // allow IPv6 literals such as [::1]
         if (IPAddress.TryParse(literal, out var address))
         {
             return IsPrivate(address) ? AddressCheck.Private : AddressCheck.Public;
@@ -160,6 +194,7 @@ public sealed class LogoStorage : ILogoStorage
         {
             var addresses = await Dns.GetHostAddressesAsync(host);
             if (addresses.Length == 0) return AddressCheck.Unknown;
+            // If ANY of the resolved addresses is private, refuse — prevents DNS rebinding tricks.
             return addresses.Any(IsPrivate) ? AddressCheck.Private : AddressCheck.Public;
         }
         catch (SocketException)
@@ -168,6 +203,9 @@ public sealed class LogoStorage : ILogoStorage
         }
     }
 
+    /// <summary>
+    /// Returns true for loopback, private, link-local, CGNAT and multicast IPs.
+    /// </summary>
     private static bool IsPrivate(IPAddress address)
     {
         if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4();

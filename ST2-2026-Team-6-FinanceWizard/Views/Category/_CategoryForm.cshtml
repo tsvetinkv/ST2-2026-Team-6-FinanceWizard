@@ -1,8 +1,11 @@
 @model Category
 @{
+    // The same partial serves both Create and Edit. "isEdit" is decided by whether the
+    // controller stashed a CategoryId in ViewData before rendering.
     bool isEdit = ViewData["CategoryId"] != null;
     long? categoryId = isEdit ? Convert.ToInt64(ViewData["CategoryId"]) : null;
 
+    // Fall back to a safe default icon and colour so the preview always renders.
     var current = string.IsNullOrWhiteSpace(Model.Icon) ? "tag" : Model.Icon;
     var colorValue = Colors.Normalize(Model.Color) ?? "#1d4ed8";
 }
@@ -11,9 +14,12 @@
     <h1 class="fw-page-title fw-form-title">@(isEdit ? "Edit category" : "Add category")</h1>
     <p class="fw-muted fw-form-sub">Give it a name, pick any color and any icon.</p>
 
+    @* asp-route-id passes the id only in Edit mode (null is fine — the route just omits it). *@
     <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@categoryId" method="post" novalidate>
         <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 
+        @* Live preview card. All the data-* attributes are hooks for fw-pickers.js,
+           which updates them as the user types in the name field or picks a colour / icon. *@
         <div class="fw-item-card fw-preview" aria-hidden="true">
             <span class="fw-avatar @Colors.Class(colorValue)" data-color-preview style="@Colors.Style(colorValue, Model.Name)"><i class="bi bi-@current fw-bi" data-icon-preview></i></span>
             <div class="fw-item-name" data-name-preview data-empty="Category name">@(string.IsNullOrWhiteSpace(Model.Name) ? "Category name" : Model.Name.Trim())</div>
@@ -21,12 +27,17 @@
 
         <div class="fw-form-group">
             <label asp-for="Name" class="fw-label"></label>
+            @* data-name-source tells fw-pickers.js which input to mirror into the preview card. *@
             <input asp-for="Name" class="form-control" placeholder="e.g. Groceries, Transport" maxlength="100" autofocus data-name-source />
             <span asp-validation-for="Name" class="fw-error"></span>
         </div>
 
         <div class="fw-form-group">
             <label for="ColorHex" class="fw-label">Color <span class="fw-muted">(optional)</span></label>
+            @* Two inputs:
+               - <input type="color"> opens the OS colour picker
+               - <input type="text">  lets the user paste a hex code directly
+               fw-pickers.js keeps them in sync. The submitted field is "Color". *@
             <div class="fw-color-row">
                 <input type="color" id="Color" name="Color" class="fw-color-input" value="@colorValue" aria-label="Pick a color" />
                 <input type="text" id="ColorHex" class="form-control fw-color-hex" value="@colorValue" maxlength="7" autocomplete="off" aria-label="Color hex code" />
@@ -34,6 +45,9 @@
             <span asp-validation-for="Color" class="fw-error"></span>
         </div>
 
+        @* Icon picker. The grid itself is filled lazily by fw-pickers.js from the JSON list
+           of Bootstrap Icons. The selected icon name is stored in the hidden "Icon" field,
+           which is what the form posts back to the server. *@
         <div class="fw-form-group" id="iconPicker" data-icons-url="@Url.Content("~/lib/bootstrap-icons/font/bootstrap-icons.json")">
             <label for="iconSearch" class="fw-label">Icon <span class="fw-muted" id="iconLabel">@current</span></label>
             <input type="hidden" id="Icon" name="Icon" value="@current" />
