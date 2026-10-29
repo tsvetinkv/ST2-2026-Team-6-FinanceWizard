@@ -186,7 +186,8 @@
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 small">
             <span>&copy; @DateTime.Now.Year FinanceWizard. All rights reserved.</span>
             <span>
-                <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+                <a asp-controller="Home" asp-action="Privacy"
+                   aria-current="@(IsCurrent("Home", "Privacy") ? "page" : null)">Privacy Policy</a>
                 <span aria-hidden="true"> &middot; </span>
                 Personal finance tracker
             </span>

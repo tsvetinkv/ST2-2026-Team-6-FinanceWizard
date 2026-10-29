@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    FinanceWizard – site.css
    Theme tokens (light / dark), Bootstrap 5.3 bridge, glassmorphism, landing,
    auth and chart styles. All text colours are chosen for WCAG 2.1 AA (>= 4.5:1)
@@ -3466,5 +3466,428 @@ html[data-bs-theme="dark"] .fw-chip-check.has-color input:checked + label .fw-ic
 
     .fw-navbar .navbar-brand {
         margin-right: 0.5rem;
+    }
+}
+
+/* ---------- 15. Privacy policy ---------------------------------------------- */
+.fw-privacy {
+    display: grid;
+    gap: 1rem;
+    align-items: start;
+}
+
+@media (min-width: 992px) {
+    .fw-privacy {
+        grid-template-columns: 220px minmax(0, 1fr);
+    }
+
+    /* The table of contents stays in view while the policy scrolls */
+    .fw-privacy-toc {
+        position: sticky;
+        top: 1rem;
+    }
+}
+
+.fw-privacy-toc {
+    padding: 1rem 1.1rem;
+}
+
+.fw-privacy-toc-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fw-text-muted);
+    margin-bottom: 0.6rem;
+}
+
+.fw-privacy-toc ol {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+}
+
+.fw-privacy-toc li + li {
+    margin-top: 0.3rem;
+}
+
+.fw-privacy-toc a,
+.fw-privacy-section a {
+    color: var(--fw-link);
+}
+
+.fw-privacy-section {
+    padding: 1.25rem 1.4rem;
+    line-height: 1.6;
+    /* Anchor jumps leave a little room above the heading */
+    scroll-margin-top: 1rem;
+}
+
+.fw-privacy-section h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.fw-privacy-section > :last-child {
+    margin-bottom: 0;
+}
+
+.fw-privacy-list dt {
+    font-weight: 700;
+}
+
+.fw-privacy-list dd {
+    margin: 0 0 0.75rem;
+    color: var(--fw-text-muted);
+}
+
+.fw-privacy-note {
+    padding: 0.75rem 1rem;
+    border-left: 3px solid var(--fw-gold);
+    background: var(--fw-bg-alt);
+    border-radius: 0.4rem;
+}
+
+.fw-privacy-table {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+.fw-privacy-table th {
+    white-space: nowrap;
+}
+
+/* ---------- 16. AI Advisor (Assistant page) ---------------------------------
+   The --fw-ai-* tokens follow the light / dark theme via [data-bs-theme="dark"]. */
+/* ---------- Theme tokens ---------- */
+:root {
+    --fw-ai-card-bg: #ffffff;
+    --fw-ai-card-border: #dbe2ea;
+    --fw-ai-chat-bg: #f5f7fb;
+    --fw-ai-chat-border: #e2e8f0;
+    --fw-ai-user-bubble: #1d4ed8;
+    --fw-ai-user-text: #ffffff;
+    --fw-ai-bot-bubble: #ffffff;
+    --fw-ai-bot-border: #dbe2ea;
+    --fw-ai-bot-text: #0f172a;
+    --fw-ai-accent: #1d4ed8;
+    --fw-ai-code-bg: #eef2f7;
+    --fw-ai-disclaimer-bg: #eff6ff;
+    --fw-ai-disclaimer-border: #bfdbfe;
+    --fw-ai-disclaimer-text: #1e3a8a;
+    --fw-ai-muted: #64748b;
+}
+
+[data-bs-theme="dark"] {
+    --fw-ai-card-bg: #151922;
+    --fw-ai-card-border: #2a3244;
+    --fw-ai-chat-bg: #0b0d12;
+    --fw-ai-chat-border: #232a3b;
+    --fw-ai-user-bubble: #2563eb;
+    --fw-ai-user-text: #ffffff;
+    --fw-ai-bot-bubble: #1a1f2b;
+    --fw-ai-bot-border: #2f3a50;
+    --fw-ai-bot-text: #e2e8f0;
+    --fw-ai-accent: #60a5fa;
+    --fw-ai-code-bg: #0f131c;
+    --fw-ai-disclaimer-bg: #172033;
+    --fw-ai-disclaimer-border: #2f3a50;
+    --fw-ai-disclaimer-text: #93c5fd;
+    --fw-ai-muted: #94a3b8;
+}
+
+/* ---------- Layout ---------- */
+.fw-ai-card {
+    background-color: var(--fw-ai-card-bg);
+    border: 1px solid var(--fw-ai-card-border);
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.07);
+    padding: 2rem;
+}
+
+.fw-ai-chat-box {
+    background-color: var(--fw-ai-chat-bg);
+    border: 1px solid var(--fw-ai-chat-border);
+    border-radius: 12px;
+    min-height: 320px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.fw-ai-disclaimer {
+    background-color: var(--fw-ai-disclaimer-bg);
+    border: 1px solid var(--fw-ai-disclaimer-border);
+    color: var(--fw-ai-disclaimer-text);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+}
+
+/* ---------- Message rows ---------- */
+.fw-msg-row {
+    display: flex;
+    margin-bottom: 1.1rem;
+}
+
+    .fw-msg-row.is-user {
+        justify-content: flex-end;
+    }
+
+    .fw-msg-row.is-bot {
+        justify-content: flex-start;
+    }
+
+.fw-bubble {
+    max-width: 80%;
+    border-radius: 14px;
+    padding: 0.9rem 1.15rem;
+}
+
+.fw-msg-row.is-bot .fw-bubble {
+    max-width: 92%;
+    width: 100%;
+}
+
+.fw-bubble-user {
+    background-color: var(--fw-ai-user-bubble);
+    color: var(--fw-ai-user-text);
+    border-radius: 14px 14px 3px 14px;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.fw-bubble-bot {
+    background-color: var(--fw-ai-bot-bubble);
+    color: var(--fw-ai-bot-text);
+    border: 1px solid var(--fw-ai-bot-border);
+    border-radius: 14px 14px 14px 3px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.fw-bubble-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 0.5rem;
+}
+
+.fw-bubble-time {
+    text-align: right;
+    font-size: 0.68rem;
+    opacity: 0.65;
+    margin-top: 0.5rem;
+}
+
+/* ---------- Rendered Markdown (advisor replies) ---------- */
+.fw-md {
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+    .fw-md > :first-child {
+        margin-top: 0;
+    }
+
+    .fw-md > :last-child {
+        margin-bottom: 0;
+    }
+
+    .fw-md p {
+        margin: 0 0 0.7rem;
+    }
+
+    .fw-md h1,
+    .fw-md h2,
+    .fw-md h3,
+    .fw-md h4 {
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: var(--fw-ai-accent);
+        margin: 1.1rem 0 0.45rem;
+        padding-left: 0.6rem;
+        border-left: 3px solid var(--fw-ai-accent);
+    }
+
+    .fw-md ul,
+    .fw-md ol {
+        margin: 0 0 0.75rem;
+        padding-left: 1.4rem;
+    }
+
+    .fw-md li {
+        margin-bottom: 0.3rem;
+    }
+
+        .fw-md li::marker {
+            color: var(--fw-ai-accent);
+        }
+
+    .fw-md strong {
+        font-weight: 700;
+    }
+
+    .fw-md code {
+        background-color: var(--fw-ai-code-bg);
+        border-radius: 5px;
+        padding: 0.1rem 0.35rem;
+        font-size: 0.88em;
+    }
+
+    .fw-md table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.6rem 0 0.9rem;
+        font-size: 0.9rem;
+    }
+
+    .fw-md th,
+    .fw-md td {
+        border: 1px solid var(--fw-ai-bot-border);
+        padding: 0.45rem 0.6rem;
+        text-align: left;
+    }
+
+    .fw-md th {
+        background-color: var(--fw-ai-code-bg);
+        font-weight: 600;
+    }
+
+    .fw-md hr {
+        border: 0;
+        border-top: 1px solid var(--fw-ai-bot-border);
+        margin: 0.9rem 0;
+    }
+
+.fw-plain {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ---------- Prompt pills & form ---------- */
+.fw-prompt-pill {
+    background-color: var(--fw-ai-bot-bubble);
+    border: 1px solid var(--fw-ai-bot-border);
+    color: var(--fw-ai-bot-text);
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+    .fw-prompt-pill:hover {
+        background-color: var(--fw-ai-user-bubble);
+        color: #ffffff;
+        border-color: var(--fw-ai-user-bubble);
+    }
+
+.fw-char-counter {
+    font-size: 0.75rem;
+    color: var(--fw-ai-muted);
+    font-weight: 600;
+}
+
+/* Scoped to the assistant card so the global .fw-section-label (dashboard) is unchanged */
+.fw-ai-card .fw-section-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fw-ai-muted);
+}
+
+.fw-key-hint {
+    font-size: 0.75rem;
+    color: var(--fw-ai-muted);
+}
+
+/* The question box is made read-only while a message is sending (prevents double-sends).
+   Bootstrap 5.1 paints [readonly] inputs light grey (#e9ecef), which flashes in dark mode,
+   so the normal themed colours are kept. */
+.fw-ai-card .form-control[readonly] {
+    background-color: var(--fw-surface);
+    color: var(--fw-text);
+}
+
+/* ---------- Entrance animations ---------- */
+@keyframes fw-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fw-dot-bounce {
+    0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.35;
+    }
+
+    40% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.fw-msg-row.fw-animate {
+    animation: fw-fade-up 0.45s ease-out both;
+}
+
+    .fw-msg-row.fw-animate .fw-bubble {
+        animation: fw-fade-up 0.45s ease-out 0.05s both;
+    }
+
+/* Typing indicator shown while waiting for the reply */
+.fw-typing {
+    display: none;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.85rem 1.15rem;
+    margin-bottom: 1.1rem;
+    width: fit-content;
+    background-color: var(--fw-ai-bot-bubble);
+    border: 1px solid var(--fw-ai-bot-border);
+    border-radius: 14px 14px 14px 3px;
+    animation: fw-fade-up 0.3s ease-out both;
+}
+
+    .fw-typing.is-visible {
+        display: flex;
+    }
+
+    .fw-typing span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: var(--fw-ai-accent);
+        animation: fw-dot-bounce 1.2s infinite ease-in-out;
+    }
+
+        .fw-typing span:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .fw-typing span:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+@media (prefers-reduced-motion: reduce) {
+    .fw-msg-row.fw-animate,
+    .fw-msg-row.fw-animate .fw-bubble,
+    .fw-typing,
+    .fw-typing span {
+        animation: none !important;
     }
 }
