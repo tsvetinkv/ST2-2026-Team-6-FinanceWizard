@@ -6,8 +6,18 @@ using ST2_2026_Team_6_FinanceWizard.Services.Models;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services
 {
-    // Facade pattern: hides the wallet service, the statistics service and four repositories
-    // behind one method, so controllers only depend on IDashboardFacade.
+    /// <summary>
+    /// Facade pattern: hides the wallet service, the statistics service and four repositories
+    /// behind one method, so controllers only depend on IDashboardFacade.
+    ///
+    /// Design pattern: FACADE.
+    /// - Purpose: the dashboard needs data from several sub-systems. Instead of the controller
+    ///   orchestrating five calls (and knowing about their order and return types), it asks one
+    ///   façade for a single DashboardData object.
+    /// - Benefits: the controller stays thin, the dashboard logic is reusable from other
+    ///   entry points (e.g. an API endpoint) without duplication, and the sub-systems can be
+    ///   refactored without changing controllers.
+    /// </summary>
     public class DashboardFacade : IDashboardFacade
     {
         private const int RecentTransactionCount = 5;
@@ -36,6 +46,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             _tagRepo = tagRepo;
         }
 
+        /// <summary>
+        /// Builds everything the dashboard needs in one call:
+        /// wallets, counts, recent transactions and stats (KPIs + monthly + category slices).
+        /// </summary>
         public async Task<DashboardData> GetDashboardDataAsync(long userId, string? currency = null)
         {
             // One DbContext is shared by all services of a request, so the calls run one after another

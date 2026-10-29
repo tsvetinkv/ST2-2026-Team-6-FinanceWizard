@@ -6,16 +6,19 @@
     ViewData["Title"] = "Dashboard";
     bool isAuthenticated = User.Identity?.IsAuthenticated ?? false;
 
-    // Demo data for the mock chart (values in thousands of euros)
+    // Demo data for the mock chart on the guest landing page (values in thousands of euros).
+    // These constants are only used in the "else" branch below — signed-in users get real data.
     var months = new[] { "May", "Jun", "Jul", "Aug", "Sep", "Oct" };
     var income = new[] { 3.2, 3.4, 3.1, 3.8, 3.6, 4.2 };
     var expense = new[] { 2.4, 2.7, 2.9, 2.5, 2.8, 2.6 };
 
-    const double baseY = 200;   // chart baseline
-    const double unit = 36;     // pixels per 1k
-    const double left = 48;     // left padding for axis labels
+    const double baseY = 200;   // chart baseline (y coordinate of the x-axis)
+    const double unit = 36;     // pixels per 1k of income / expense
+    const double left = 48;     // left padding for the axis labels
     const double groupW = 70;   // width of one month group
 
+    // Helpers for building the inline SVG chart below. Both keep the invariant culture
+    // so decimals use "." regardless of the server's culture.
     string F(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
 
     Microsoft.AspNetCore.Html.HtmlString T(double x, double y, string anchor, string label) =>
@@ -25,7 +28,13 @@
 
 @if (isAuthenticated)
 {
+    @* ============================================================
+       SIGNED-IN DASHBOARD
+       ============================================================ *@
+
     var wallets = Model.Wallets;
+
+    // Group wallets by currency — different currencies are never summed together.
     var totals = wallets
         .GroupBy(w => w.Currency)
         .Select(g => Money.Format(g.Sum(w => w.Balance), g.Key))
@@ -33,11 +42,17 @@
 
     var kpi = Model.Kpis;
     string kpiSymbol = Money.Symbol(kpi.Currency);
+
+    // Serialise the chart data to JSON, so the client-side fw-dashboard.js can render
+    // the Chart.js charts without another HTTP call. The JSON is embedded in a hidden div
+    // and read back from its data-chart attribute. Web defaults give camelCase.
     string chartJson = JsonSerializer.Serialize(
         new { currency = kpi.Currency, symbol = kpiSymbol, months = Model.Monthly, categories = Model.SpendingByCategory },
         new JsonSerializerOptions(JsonSerializerDefaults.Web));
     string MoneyOf(decimal v) => Money.Format(v, kpi.Currency);
 
+    @* Hero banner with the greeting and primary CTAs. The two blobs are decorative
+       (aria-hidden) and positioned by CSS. *@
     <section class="fw-hero mb-4" aria-labelledby="welcome-heading">
         <span class="fw-blob fw-blob-blue" aria-hidden="true"></span>
         <span class="fw-blob fw-blob-gold" aria-hidden="true"></span>
@@ -49,6 +64,8 @@
         </div>
     </section>
 
+    @* Tile grid: shortcuts to each section of the app with a live count.
+       The --h custom property sets the avatar hue for each tile, keeping tiles visually distinct. *@
     <h2 class="fw-section-label">Manage</h2>
     <nav class="fw-tile-grid" aria-label="Sections">
         <a class="fw-tile" style="--h:215" asp-controller="Transactions" asp-action="Index">
@@ -90,6 +107,8 @@
 
     <link rel="stylesheet" href="~/css/fw-dashboard.css" asp-append-version="true" />
 
+    @* Currency switch — only appears when the user has data in more than one currency.
+       The active link has aria-current="true" so screen readers announce the current selection. *@
     <div class="fw-kpi-head mt-4">
         <h2 class="fw-section-label">This month</h2>
         @if (Model.AvailableCurrencies.Count > 1)
@@ -105,6 +124,10 @@
             </nav>
         }
     </div>
+
+    @* KPI cards — Income, Expenses, Net, Savings rate.
+       The Net card switches colour based on sign. The Savings card shows "–" when the
+       savings rate is null (no income), which is the correct semantic (undefined ratio). *@
     <div class="row g-3 mb-3">
         <div class="col-6 col-lg-3 d-flex">
             <article class="fw-kpi-card is-income">
@@ -145,6 +168,12 @@
         </div>
     </div>
 
+    @* Two chart panels side by side (stacked on mobile).
+       Each panel:
+       - renders a <canvas> that Chart.js will draw into
+       - renders a visually-hidden <table> with the same data, so screen readers and
+         users with JS disabled still get the numbers.
+       - falls back to an empty-state message when there is nothing to draw. *@
     <div class="row g-3 mb-4">
         <div class="col-lg-7">
             <section class="fw-panel h-100" aria-labelledby="home-monthly-h">
@@ -203,8 +232,11 @@
             </section>
         </div>
     </div>
+    @* Hidden data holder for fw-dashboard.js. The attribute "data-chart" holds the JSON
+       (HTML-encoded by Razor). The script reads it back with JSON.parse. *@
     <div id="fwDashboardData" data-chart="@chartJson" hidden></div>
 
+    @* Two list panels: wallets on the left, recent transactions on the right. *@
     <div class="row g-3 mb-4">
         <div class="col-lg-5">
             <section class="fw-panel h-100" aria-labelledby="home-wallets-h">
@@ -249,6 +281,7 @@
                         @foreach (var t in Model.RecentTransactions)
                         {
                             bool inc = t.Type == "Income";
+                            // Prefer the user's description, then the merchant name, then a generic label.
                             string title = !string.IsNullOrWhiteSpace(t.Description) ? t.Description : (t.Merchant?.Name ?? "Transaction");
                             <li>
                                 <div class="fw-list-main">
@@ -281,6 +314,13 @@
 }
 else
 {
+    @* ============================================================
+       GUEST LANDING PAGE
+       Hero + features + call to action. Everything is static;
+       the chart on the right is a decorative SVG mock so the
+       landing page still demonstrates what the product does.
+       ============================================================ *@
+
     <!-- Hero -->
     <section class="fw-hero" aria-labelledby="hero-heading">
         <span class="fw-blob fw-blob-blue" aria-hidden="true"></span>
@@ -329,6 +369,9 @@ else
                         </div>
                     </div>
 
+                    @* Decorative mock chart: drawn inline so it renders before any JS loads.
+                       The role="img" + aria-label give a concise description, and the
+                       individual bars are aria-hidden because the numbers are decorative. *@
                     <svg class="fw-chart" viewBox="0 0 480 236" role="group" aria-label="Bar chart comparing income and expenses for the last six months">
                         @for (int k = 0; k <= 5; k++)
                         {
@@ -358,6 +401,8 @@ else
                             <span class="fw-legend-item"><span class="fw-swatch fw-swatch-income"></span>Income</span>
                             <span class="fw-legend-item"><span class="fw-swatch fw-swatch-expense"></span>Expenses</span>
                         </div>
+                        @* The readout is updated by the script at the bottom when the user hovers / focuses
+                           a bar group; aria-live="polite" announces it to screen readers too. *@
                         <div id="chartReadout" class="fw-readout" aria-live="polite">Hover or focus a month for details</div>
                     </div>
 
@@ -438,6 +483,10 @@ else
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
         <script src="~/js/fw-dashboard.js" asp-append-version="true"></script>
     }
+    @* Guest-only animation helpers:
+       - bar hover / focus readout updates the aria-live element
+       - count-up animation for the "€12,480.00" mock balance, using IntersectionObserver
+         so it starts when it scrolls into view. Also skipped for prefers-reduced-motion. *@
     <script>
         (function() {
             var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -470,6 +519,7 @@ else
                 return value.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
             }
 
+            // Cubic ease-out: fast start, slow finish.
             function run(el) {
                 var target = parseFloat(el.dataset.target);
                 var decimals = parseInt(el.dataset.decimals || '0', 10);
@@ -488,6 +538,7 @@ else
                 window.requestAnimationFrame(step);
             }
 
+            // Run once per counter, only after it becomes visible.
             var observer = new IntersectionObserver(function(entries) {
                 entries.forEach(function(entry) {
                     if (entry.isIntersecting) {

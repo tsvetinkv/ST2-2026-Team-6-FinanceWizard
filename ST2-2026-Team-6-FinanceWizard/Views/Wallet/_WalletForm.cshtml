@@ -1,7 +1,10 @@
 @model WalletCreateViewModel
 @{
+    // Same partial for Create and Edit.
     bool isEdit = ViewData["WalletId"] != null;
     string? routeId = isEdit ? ViewData["WalletId"]!.ToString() : null;
+
+    // Normalise legacy symbols (€) to their ISO code, so the selected <option> works.
     var selectedCurrency = CurrencyInfo.Find(Model.Currency)?.Code ?? Model.Currency;
 }
 
@@ -12,6 +15,8 @@
     <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@routeId" method="post" novalidate>
         <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 
+        @* Wallet type as radio cards. The two options match WalletTypes.All,
+           and the controller falls back to Spending if an unknown value arrives. *@
         <fieldset class="fw-form-group">
             <legend class="fw-label">Type</legend>
             <div class="fw-choice-grid">
@@ -45,6 +50,8 @@
             <span asp-validation-for="Name" class="fw-error"></span>
         </div>
 
+        @* Balance + currency side by side. The label changes between "Initial amount"
+           (Create) and "Balance" (Edit), matching the semantics of the two actions. *@
         <div class="fw-form-row">
             <div class="fw-form-group">
                 <label asp-for="Balance" class="fw-label">@(isEdit ? "Balance" : "Initial amount")</label>
@@ -65,12 +72,12 @@
 
         @if (isEdit)
         {
+            @* Extra warning shown only on the Edit page: changing the currency also
+               converts every transaction amount on the wallet. *@
             <div class="fw-hint">
                 When you change the currency of an existing wallet, its balance and transactions are converted at today's exchange rate.
             </div>
         }
-
-        <div class="fw-form-actions">
 
         <div class="fw-form-actions">
             <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Create wallet")</button>

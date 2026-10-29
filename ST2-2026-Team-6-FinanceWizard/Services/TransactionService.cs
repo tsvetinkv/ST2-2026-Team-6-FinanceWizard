@@ -5,6 +5,19 @@ using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 namespace ST2_2026_Team_6_FinanceWizard.Services
 {
+    /// <summary>
+    /// Business logic for creating / updating / deleting transactions.
+    ///
+    /// Design patterns used:
+    /// - Service layer (part of the "Service" pattern): the controller has no balance-mutation logic,
+    ///   it just calls these methods. This is where the "money movement" business rules live.
+    /// - Transactional consistency: all balance changes are applied in the same SaveChanges
+    ///   call as the transaction row, so the DB is never left in a state where the balance
+    ///   does not match the sum of the transactions.
+    ///
+    /// Key invariant: a Wallet.Balance can never become negative. Every method checks this
+    /// before applying a mutation and throws InvalidOperationException with a user-friendly message.
+    /// </summary>
     public class TransactionService : ITransactionService
     {
         private readonly IEfRepository<Transaction> _transactionRepo;
@@ -30,6 +43,11 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             _walletService = walletService;
         }
 
+        /// <summary>
+        /// All transactions of the user's wallets, newest first, with their related
+        /// wallet / merchant / category / tags loaded.
+        /// Used by the AI assistant to build the prompt context.
+        /// </summary>
         public async Task<IEnumerable<Transaction>> GetAllByUserIdAsync(long userId)
         {
             return await _transactionRepo.All()
@@ -42,6 +60,11 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Finds a single transaction, but only if it belongs to one of the user's wallets.
+        /// The user-scoping is built into the query, so an attacker cannot enumerate
+        /// other users' transaction ids.
+        /// </summary>
         public async Task<Transaction?> GetByIdAsync(long id, long userId)
         {
             return await _transactionRepo.All()
@@ -50,6 +73,16 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 .FirstOrDefaultAsync(t => t.Id == id && t.Wallet.UserId == userId);
         }
 
+        /// <summary>
+        /// Creates a transaction and updates the wallet's balance in one SaveChanges.
+        ///
+        /// Steps:
+        /// 1. Resolve the wallet (must belong to this user).
+        /// 2. Check that merchant / category / tags exist.
+        /// 3. If it's an expense, ensure the wallet has enough money.
+        /// 4. Build the transaction entity and update wallet.Balance.
+        /// 5. Add + SaveChanges — both changes are committed together.
+        /// </summary>
         public async Task<Transaction> CreateTransactionAsync(
             long userId,
             long walletId,
@@ -68,11 +101,13 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
                 throw new InvalidOperationException("The selected wallet was not found.");
             }
 
+            // De-duplicate the tag ids: the same tag must not be attached twice.
             var distinctTagIds = (tagIds ?? Enumerable.Empty<long>()).Distinct().ToList();
             await EnsureReferencesExistAsync(merchantId, categoryId, distinctTagIds);
 
             bool isIncome = IsIncome(type);
 
+            // Business rule: an expense cannot make the balance negative.
             if (!isIncome && wallet.Balance < amount)
             {
                 throw new InvalidOperationException(
@@ -101,6 +136,14 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             return transaction;
         }
 
+        /// <summary>
+        /// Updates a transaction and repairs both the old and the new wallet's balance.
+        ///
+        /// Two cases:
+        /// 1. Same wallet — take the original transaction out, apply the new one, check ≥ 0.
+        /// 2. Moving to another wallet — take the original out of the old wallet (must stay ≥ 0),
+        ///    apply the new one to the new wallet (must stay ≥ 0).
+        /// </summary>
         public async Task UpdateTransactionAsync(
             long id,
             long userId,
@@ -127,7 +170,8 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             bool wasIncome = IsIncome(transaction.Type);
             bool isIncome = IsIncome(type);
 
-            // Balance of the old wallet with the ORIGINAL transaction taken back out
+            // Balance of the old wallet with the ORIGINAL transaction taken back out.
+            // This is the "baseline" against which the new transaction will be applied.
             decimal oldWalletWithoutOriginal = wasIncome
                 ? oldWallet.Balance - transaction.Amount
                 : oldWallet.Balance + transaction.Amount;
@@ -199,6 +243,13 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
             await _transactionRepo.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Deletes a transaction and reverses its balance effect.
+        ///
+        /// Reversing an income reduces the balance — that could make it negative if the money was
+        /// already spent, in which case we refuse with an explanation.
+        /// Reversing an expense always adds money back, so it is always safe.
+        /// </summary>
         public async Task DeleteTransactionAsync(long id, long userId)
         {
             // Only finds the transaction if it belongs to one of this user's wallets
@@ -231,6 +282,10 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
         private static bool IsIncome(string? type) =>
             string.Equals(type, "Income", StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Verifies that every referenced merchant / category / tag actually exists.
+        /// This turns a potential FOREIGN KEY constraint violation into a clear business error.
+        /// </summary>
         private async Task EnsureReferencesExistAsync(long? merchantId, long? categoryId, IReadOnlyCollection<long> tagIds)
         {
             if (merchantId.HasValue && !await _merchantRepo.All().AnyAsync(m => m.Id == merchantId.Value))
@@ -245,6 +300,7 @@ namespace ST2_2026_Team_6_FinanceWizard.Services
 
             if (tagIds.Count > 0)
             {
+                // One query that counts how many of the submitted ids exist.
                 int existing = await _tagRepo.All().CountAsync(t => tagIds.Contains(t.Id));
                 if (existing != tagIds.Count)
                 {

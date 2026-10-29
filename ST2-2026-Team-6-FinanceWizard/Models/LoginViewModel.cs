@@ -2,6 +2,10 @@
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
+    /// <summary>
+    /// Input model for the login form.
+    /// Both fields are required; the email is validated with [EmailAddress].
+    /// </summary>
     public class LoginViewModel
     {
         [Required(ErrorMessage = "Email is required.")]

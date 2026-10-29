@@ -3,6 +3,8 @@
     bool isEdit = ViewData["TransactionId"] != null;
     long? transactionId = isEdit ? Convert.ToInt64(ViewData["TransactionId"]) : null;
 
+    // Show the currency symbol of the currently selected wallet next to the amount.
+    // The script at the bottom updates it when the user picks another wallet.
     var selectedWallet = Model.Wallets.FirstOrDefault(w => w.Id == Model.WalletId);
     var symbol = Money.Symbol(selectedWallet?.Currency);
 }
@@ -17,6 +19,7 @@
 
     @if (!Model.Wallets.Any())
     {
+        @* The form cannot be submitted without a wallet, so we show a friendly CTA instead. *@
         <div class="fw-inline-empty">
             You need a wallet before you can add a transaction.
             <a asp-controller="Wallet" asp-action="Create">Create a wallet</a>
@@ -27,6 +30,9 @@
         <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@transactionId" method="post" novalidate>
             <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 
+            @* Type selector: Income vs Expense as radio "segments".
+               asp-for binds to Model.Type. The value drives the sign of the balance change
+               (TransactionService.IsIncome). *@
             <fieldset class="fw-form-group">
                 <legend class="fw-label">Type</legend>
                 <div class="fw-segment">
@@ -52,6 +58,7 @@
                 <div class="fw-form-group">
                     <label asp-for="Amount" class="fw-label"></label>
                     <div class="input-group">
+                        @* id="amountSymbol" is updated by the small script at the bottom. *@
                         <span class="input-group-text" id="amountSymbol" aria-hidden="true">@symbol</span>
                         <input asp-for="Amount" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control fw-amount-input" placeholder="0.00" aria-describedby="amount-hint" />
                     </div>
@@ -72,6 +79,8 @@
                 <span asp-validation-for="Description" class="fw-error"></span>
             </div>
 
+            @* Wallet picker as radio cards. Each radio stores the currency symbol in
+               data-symbol so the small script can update #amountSymbol without another round-trip. *@
             <div class="fw-form-section">Wallet &middot; choose one</div>
             <fieldset class="fw-form-group">
                 <legend class="visually-hidden">Wallet</legend>
@@ -97,6 +106,9 @@
                 <span asp-validation-for="WalletId" class="fw-error"></span>
             </fieldset>
 
+            @* Merchant + category. Both are optional single choices.
+               The AI hint element below the category field is filled by fw-ai-category.js
+               with a suggested category while the user types a description / picks a merchant. *@
             <div class="fw-form-section">Details &middot; choose one of each</div>
             <div class="fw-form-row">
                 <div class="fw-form-group">
@@ -114,6 +126,8 @@
                         <option value="">No category</option>
                     </select>
                     <span asp-validation-for="CategoryId" class="fw-error"></span>
+                    @* data-url / data-create-url are read by fw-ai-category.js.
+                       hidden means it only appears when there is something to suggest. *@
                     <div id="aiCategoryHint" class="fw-ai-hint" hidden aria-live="polite"
                          data-url="@Url.Action("SuggestCategory", "Transactions")"
                          data-create-url="@Url.Action("Create", "Category")"></div>
@@ -124,6 +138,8 @@
                 <a asp-controller="Category" asp-action="Create">add a category</a>.
             </div>
 
+            @* Tags: any number. Each tag is a checkbox with the tag's own colour and (optional) icon.
+               Colors.Style / Colors.Class handle both the user-chosen and automatic-colour modes. *@
             <div class="fw-form-section">Tags &middot; choose any number</div>
             <fieldset class="fw-form-group">
                 <legend class="visually-hidden">Tags</legend>
@@ -158,6 +174,8 @@
             </div>
         </form>
 
+        @* Small inline script: keep #amountSymbol in sync with the selected wallet.
+           Deliberately inline (not in a shared .js) because it is only relevant to this form. *@
         <script>
             (function () {
                 // Show the currency symbol of the selected wallet next to the amount
@@ -170,6 +188,7 @@
                 });
             })();
         </script>
+        @* The AI suggestion script is loaded last so it can find all the elements above. *@
         <script src="~/js/fw-ai-category.js" asp-append-version="true"></script>
     }
 </div>

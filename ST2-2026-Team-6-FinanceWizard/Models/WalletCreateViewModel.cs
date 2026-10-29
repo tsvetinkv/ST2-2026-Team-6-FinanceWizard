@@ -1,8 +1,17 @@
-using System.ComponentModel.DataAnnotations;
 using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
+    /// <summary>
+    /// Form model for creating / editing a wallet.
+    ///
+    /// Design notes:
+    /// - The Type field uses [RegularExpression] to lock it to the two valid WalletTypes values.
+    /// - Balance is allowed to be 0 (new empty wallet) but never negative.
+    /// - Currency is validated against CurrencyInfo.Find in the controller, not by data annotations,
+    ///   because the supported set lives in that class.
+    /// </summary>
     public class WalletCreateViewModel
     {
         [Required(ErrorMessage = "Please enter a wallet name.")]

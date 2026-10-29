@@ -3,6 +3,8 @@
     ViewData["Title"] = "Register";
 }
 
+@* Same two-column layout as Login.cshtml: marketing aside on the left, form on the right.
+   The aside's aria-hidden="false" is intentional because everything inside is decorative. *@
 <div class="fw-auth-shell">
     <div class="row g-0">
         <aside class="col-lg-5 d-none d-lg-flex fw-auth-aside">
@@ -28,6 +30,8 @@
             <h1 id="register-heading" class="mb-1">Create an account</h1>
             <p class="fw-auth-sub mb-4">It only takes a few details to get started.</p>
 
+            @* The 4 inputs map to RegisterViewModel. ConfirmPassword uses [Compare] on the server
+               and the matching jQuery validation rule on the client. *@
             <form asp-action="Register" method="post" novalidate>
                 <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 

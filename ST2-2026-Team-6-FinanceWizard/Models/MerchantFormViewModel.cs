@@ -1,6 +1,15 @@
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
-    // Form for adding / editing a merchant. The logo can be an uploaded photo OR an image link.
+    /// <summary>
+    /// Form model for adding / editing a merchant.
+    ///
+    /// Design notes:
+    /// - LogoUrl is intentionally not bound from the client: the logo can only be
+    ///   set by uploading a file or by providing an ImageLink, so the client cannot
+    ///   inject an arbitrary URL directly.
+    /// - CurrentLogoUrl is used only in Edit mode to display the existing logo.
+    /// - ValidateLogoChoice in the controller enforces "photo XOR link".
+    /// </summary>
     public class MerchantFormViewModel
     {
         public string Name { get; set; } = string.Empty;

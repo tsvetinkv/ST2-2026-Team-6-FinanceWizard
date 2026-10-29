@@ -2,6 +2,14 @@
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
+    /// <summary>
+    /// Input model for the "Change password" sub-form.
+    ///
+    /// Validators:
+    /// - [DataType(Password)] masks the field in the rendered HTML.
+    /// - [MinLength(6)] enforces the password policy.
+    /// - [Compare(...)] ensures the two new-password fields match.
+    /// </summary>
     public class ChangePasswordViewModel
     {
         [Required(ErrorMessage = "Enter your current password")]
@@ -18,6 +26,4 @@ namespace ST2_2026_Team_6_FinanceWizard.Models
         [DataType(DataType.Password)]
         public string ConfirmNewPassword { get; set; } = string.Empty;
     }
-
-
 }

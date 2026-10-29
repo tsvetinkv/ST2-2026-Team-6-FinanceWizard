@@ -3,6 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ST2_2026_Team_6_FinanceWizard.Repositories.Entities
 {
+    /// <summary>
+    /// Application user. Mapped to the "Users" table.
+    ///
+    /// Design notes:
+    /// - PasswordHash stores a BCrypt hash, not the plain password.
+    /// - Wallets is the 1:N navigation; cascade delete (configured in ApplicationDbContext)
+    ///   means deleting a User also deletes all their wallets and their wallets' transactions.
+    /// </summary>
     [Table("Users")]
     public class User
     {

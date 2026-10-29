@@ -3,6 +3,16 @@ using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
 
 namespace ST2_2026_Team_6_FinanceWizard.Repositories;
 
+/// <summary>
+/// EF Core DbContext — the database schema and relationship configuration.
+///
+/// Design notes:
+/// - Registered as Scoped in DI: one instance per HTTP request, shared by all repositories
+///   so they participate in the same unit of work (one SaveChanges commits all pending changes together).
+/// - OnModelCreating configures relationships and cascade-delete rules.
+/// - Monetary columns use HasPrecision(18, 2) to avoid floating-point rounding.
+/// - Cascade delete on User -> Wallets means deleting a user cleans up everything automatically.
+/// </summary>
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -22,6 +32,7 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Monetary Precision Configurations
+        // HasPrecision(18, 2) → max 18 digits total, 2 after the decimal point.
         modelBuilder.Entity<Wallet>()
             .Property(w => w.Balance)
             .HasPrecision(18, 2);
@@ -31,6 +42,7 @@ public class ApplicationDbContext : DbContext
             .HasPrecision(18, 2);
 
         // 1:N Relationship User -> Wallets (spending / savings)
+        // OnDelete(Cascade): deleting a User automatically deletes their wallets.
         modelBuilder.Entity<User>()
             .HasMany(u => u.Wallets)
             .WithOne(w => w.User)
@@ -38,6 +50,8 @@ public class ApplicationDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         // Transaction -> Merchant / Category (single, optional)
+        // No cascade: deleting a merchant / category must NOT delete transactions.
+        // The controllers handle this explicitly by setting MerchantId / CategoryId to null first.
         modelBuilder.Entity<Transaction>()
             .HasOne(t => t.Merchant)
             .WithMany()
@@ -49,15 +63,19 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(t => t.CategoryId);
 
         // Transaction <-> Tag (many-to-many through TransactionTag)
+        // Composite primary key: the pair (TransactionId, TagId) must be unique.
         modelBuilder.Entity<TransactionTag>()
             .HasKey(tt => new { tt.TransactionId, tt.TagId });
 
+        // Cascade on the transaction side: deleting a transaction removes its tag links.
         modelBuilder.Entity<TransactionTag>()
             .HasOne(tt => tt.Transaction)
             .WithMany(t => t.TransactionTags)
             .HasForeignKey(tt => tt.TransactionId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Cascade on the tag side: deleting a tag removes its transaction links.
+        // This is what TagController.Delete relies on.
         modelBuilder.Entity<TransactionTag>()
             .HasOne(tt => tt.Tag)
             .WithMany()

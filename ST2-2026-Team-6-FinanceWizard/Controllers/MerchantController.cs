@@ -8,6 +8,15 @@ using ST2_2026_Team_6_FinanceWizard.Services.Contracts;
 
 namespace ST2_2026_Team_6_FinanceWizard.Controllers;
 
+/// <summary>
+/// CRUD for merchants (the "where was it bought" dimension of a transaction).
+///
+/// Design patterns used:
+/// - MVC Controller + Repository pattern.
+/// - ILogoStorage abstracts file-system and HTTP concerns away from the controller
+///   (single responsibility: the controller validates form data, the storage service
+///   handles files, MIME sniffing and SSRF checks for image links).
+/// </summary>
 [Authorize]
 public class MerchantController : Controller
 {
@@ -25,6 +34,9 @@ public class MerchantController : Controller
         _logoStorage = logoStorage;
     }
 
+    /// <summary>
+    /// GET /Merchant — lists all merchants, optionally filtered by name.
+    /// </summary>
     public async Task<IActionResult> Index(string? searchName, CancellationToken cancellationToken)
     {
         var query = _merchantRepository.All().AsNoTracking();
@@ -39,9 +51,18 @@ public class MerchantController : Controller
         return View(merchants);
     }
 
+    /// <summary>
+    /// GET /Merchant/Create — shows the empty create form.
+    /// </summary>
     [HttpGet]
     public IActionResult Create() => View(new MerchantFormViewModel());
 
+    /// <summary>
+    /// POST /Merchant/Create — validates the form, saves the logo (if any), then saves the merchant.
+    ///
+    /// Order matters: the merchant entity stores the logo's relative path.
+    /// If saving the merchant fails, the newly written logo file is deleted (rollback of the file system side).
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(MerchantFormViewModel model, CancellationToken cancellationToken)
@@ -54,6 +75,7 @@ public class MerchantController : Controller
 
         if (!ModelState.IsValid) return View(model);
 
+        // Either an uploaded photo, or a downloaded image, or nothing (logo stays null).
         var logo = await ResolveLogoAsync(model, cancellationToken);
         if (logo is { Succeeded: false })
         {
@@ -78,6 +100,9 @@ public class MerchantController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// GET /Merchant/Edit/{id} — loads the merchant into the edit form.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Edit(long id, CancellationToken cancellationToken)
     {
@@ -94,6 +119,17 @@ public class MerchantController : Controller
         });
     }
 
+    /// <summary>
+    /// POST /Merchant/Edit/{id} — updates the name and, optionally, the logo.
+    ///
+    /// Three possible logo changes:
+    /// 1. New upload / link  → replace the logo.
+    /// 2. "Remove logo" flag → set LogoUrl to null.
+    /// 3. Neither            → keep the current logo.
+    ///
+    /// The old logo file is only deleted AFTER the DB change is saved — if the save fails,
+    /// the old file is still there and the merchant still points to it.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(long id, MerchantFormViewModel model, CancellationToken cancellationToken)
@@ -139,6 +175,7 @@ public class MerchantController : Controller
         }
         catch
         {
+            // The merchant update failed — do not leak the new file.
             _logoStorage.Delete(logo?.RelativePath);
             throw;
         }
@@ -153,6 +190,13 @@ public class MerchantController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// POST /Merchant/Delete/{id} — removes a merchant.
+    ///
+    /// Like CategoryController.Delete, linked transactions are preserved:
+    /// their MerchantId is set to null before the merchant is deleted.
+    /// The logo file on disk is deleted last.
+    /// </summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id, CancellationToken cancellationToken)
@@ -172,12 +216,16 @@ public class MerchantController : Controller
         _merchantRepository.Delete(merchant);
         await _merchantRepository.SaveChangesAsync();
 
+        // Only remove the file after the DB row is gone.
         _logoStorage.Delete(merchant.LogoUrl);
 
         TempData["SuccessMessage"] = $"Merchant \"{merchant.Name}\" deleted.";
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Ensures the merchant name is non-empty and unique (case-sensitive per DB collation).
+    /// </summary>
     private async Task ValidateNameAsync(string name, long excludeId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(name))
@@ -204,7 +252,10 @@ public class MerchantController : Controller
         }
     }
 
-    // Returns null when no new logo was given (the existing one is kept)
+    /// <summary>
+    /// Turns the posted logo choice (upload, link or none) into a LogoResult.
+    /// Returns null when no new logo was given (the existing one is kept).
+    /// </summary>
     private async Task<LogoResult?> ResolveLogoAsync(MerchantFormViewModel model, CancellationToken cancellationToken)
     {
         if (model.Logo is { Length: > 0 })
@@ -220,6 +271,9 @@ public class MerchantController : Controller
         return null;
     }
 
+    /// <summary>
+    /// Adds a logo error to the correct form field (upload vs link).
+    /// </summary>
     private void AddLogoError(MerchantFormViewModel model, string message)
     {
         string key = model.Logo is { Length: > 0 }

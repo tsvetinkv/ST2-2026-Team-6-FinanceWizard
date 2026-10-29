@@ -1,8 +1,10 @@
 @model Tag
 @{
+    // Same partial for Create and Edit.
     bool isEdit = ViewData["TagId"] != null;
     long? tagId = isEdit ? Convert.ToInt64(ViewData["TagId"]) : null;
 
+    // Colour is required for a tag; use the default blue if nothing is set.
     var colorValue = Colors.Normalize(Model.Color) ?? "#1d4ed8";
     var iconValue = (Model.Icon ?? string.Empty).Trim();
     bool hasIcon = iconValue.Length > 0;
@@ -15,6 +17,8 @@
     <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@tagId" method="post" novalidate>
         <div asp-validation-summary="ModelOnly" class="fw-alert-error" role="alert"></div>
 
+        @* Live preview. When no icon is set, the preview shows a "#" glyph (via [data-hash-preview]).
+           When an icon is set, the icon is shown and the "#" is hidden — both are toggled by fw-pickers.js. *@
         <div class="fw-item-card fw-preview" aria-hidden="true">
             <span class="fw-avatar has-color" data-color-preview style="@Colors.Style(colorValue, Model.Name)">
                 <i class="bi bi-@iconValue fw-bi" data-icon-preview hidden="@(!hasIcon)"></i>
@@ -25,6 +29,8 @@
 
         <div class="fw-form-group">
             <label asp-for="Name" class="fw-label"></label>
+            @* The "#" prefix is part of the visual, so it is a separate input-group-text.
+               The actual posted name does not include the "#". *@
             <div class="input-group">
                 <span class="input-group-text" aria-hidden="true">#</span>
                 <input asp-for="Name" class="form-control" placeholder="e.g. holiday" maxlength="50" autofocus data-name-source />
@@ -41,6 +47,8 @@
             <span asp-validation-for="Color" class="fw-error"></span>
         </div>
 
+        @* Optional icon picker. Same lazy JSON load as the Category form; data-optional="true"
+           tells fw-pickers.js that clicking the currently selected icon should clear it. *@
         <div class="fw-form-group" id="iconPicker" data-icons-url="@Url.Content("~/lib/bootstrap-icons/font/bootstrap-icons.json")" data-optional="true">
             <label for="iconSearch" class="fw-label">Icon <span class="fw-muted" id="iconLabel">@(hasIcon ? iconValue : "none")</span> <span class="fw-muted">(optional)</span></label>
             <input type="hidden" id="Icon" name="Icon" value="@iconValue" />

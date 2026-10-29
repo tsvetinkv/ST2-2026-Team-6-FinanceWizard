@@ -1,9 +1,20 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using ST2_2026_Team_6_FinanceWizard.Repositories.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace ST2_2026_Team_6_FinanceWizard.Models
 {
+    /// <summary>
+    /// Form model for creating / editing a transaction.
+    ///
+    /// Design notes:
+    /// - The dropdown lists (Wallets, Merchants, Categories, Tags) are marked with [ValidateNever]
+    ///   because they are populated by the controller and never posted by the client.
+    ///   Without [ValidateNever], model binding would try to validate these nested objects
+    ///   and fail with "The value is not valid".
+    /// - Type is restricted to the two allowed values with [RegularExpression], so a tampered
+    ///   request cannot store an arbitrary string.
+    /// </summary>
     public class TransactionCreateViewModel
     {
         [Required(ErrorMessage = "Please enter an amount.")]

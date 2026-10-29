@@ -4,13 +4,17 @@
     ViewData["Title"] = "Transactions";
 
     var inv = CultureInfo.InvariantCulture;
+
+    // Pre-format the filters for the pager links, so paging keeps the current filter state.
     var term = string.IsNullOrWhiteSpace(Model.SearchTerm) ? null : Model.SearchTerm;
     var fromStr = Model.FromDate?.ToString("yyyy-MM-dd", inv);
     var toStr = Model.ToDate?.ToString("yyyy-MM-dd", inv);
     bool hasFilters = fromStr != null || toStr != null || term != null;
 
+    // Used as a "return here after delete" hint so the user lands back on the same page / filter.
     var returnUrl = Context.Request.Path + Context.Request.QueryString;
 
+    // Pager window: always show at most 5 page numbers around the current page.
     int firstPage = Math.Max(1, Model.CurrentPage - 2);
     int lastPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
 }
@@ -23,6 +27,9 @@
     </a>
 </div>
 
+@* Wallet summary at the top of the page.
+   Grouped by currency: balances of different currencies are never added together.
+   Within each currency, wallets are listed as chips. *@
 <section class="fw-panel fw-summary" aria-label="Wallet summary">
     @if (Model.Wallets.Any())
     {
@@ -56,6 +63,8 @@
     }
 </section>
 
+@* Filter form: GET so the filters live in the query string and survive refresh / back.
+   asp-for binds the fields to Model.FromDate / ToDate / SearchTerm, which preserves the current filter. *@
 <form method="get" asp-action="Index" class="fw-panel fw-filter" role="search" aria-label="Filter transactions">
     <div class="fw-filter-field">
         <label asp-for="FromDate" class="fw-label">From</label>
@@ -75,6 +84,8 @@
     </div>
 </form>
 
+@* Table panel. The <caption> is visually hidden but still announced by screen readers.
+   Each row shows: date, description (+ merchant + tags), category, wallet, type, amount, actions. *@
 <section class="fw-panel fw-table-panel" aria-label="Transaction list">
     @if (Model.Transactions.Any())
     {
@@ -101,6 +112,7 @@
                         string money = Money.Format(t.Amount, t.Wallet?.Currency);
                         bool walletIsSavings = t.Wallet?.Type == WalletTypes.Savings;
                         <tr>
+                            @* Date cell: main date + time, stacked. Uses InvariantCulture so dates are stable. *@
                             <td class="fw-col-date">
                                 <span class="fw-date-main">@t.Date.ToString("dd MMM yyyy", inv)</span>
                                 <span class="fw-date-sub">@t.Date.ToString("HH:mm", inv)</span>
@@ -120,6 +132,7 @@
                                 }
                                 @if (t.TransactionTags.Any())
                                 {
+                                    @* Tags are sorted by name for a predictable order. *@
                                     <div class="fw-tx-tags">
                                         @foreach (var tt in t.TransactionTags.OrderBy(x => x.Tag.Name))
                                         {
@@ -157,6 +170,7 @@
                                 }
                             </td>
                             <td>
+                                @* Income badge is green / up-arrow; expense is red / down-arrow. *@
                                 <span class="fw-tx-badge @(isIncome ? "is-income" : "is-expense")">
                                     @if (isIncome)
                                     {
@@ -178,6 +192,8 @@
                                        aria-label="Edit @(isIncome ? "income" : "expense") of @money from @t.Date.ToString("dd MMM yyyy", inv)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
                                     </a>
+                                    @* Delete is POST + confirmation. returnUrl lets the controller send the
+                                       user back to the exact page (page number + filters) after deletion. *@
                                     <form asp-action="Delete" asp-route-id="@t.Id" method="post"
                                           onsubmit="return confirm('Delete this transaction? Your wallet balance will be updated.');">
                                         <input type="hidden" name="returnUrl" value="@returnUrl" />
@@ -197,6 +213,7 @@
     }
     else
     {
+        @* Empty state: with or without filters. *@
         <div class="fw-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18M7 15h3" /></svg>
             @if (hasFilters)
@@ -215,10 +232,13 @@
     }
 </section>
 
+@* Pager. Only shown when there is more than one page.
+   Every link preserves FromDate / ToDate / SearchTerm, so switching pages keeps the current filter. *@
 @if (Model.TotalPages > 1)
 {
     <nav class="fw-pager" aria-label="Transactions pages">
         <ul class="pagination pagination-sm justify-content-center mb-0">
+            @* Previous button: disabled on page 1, otherwise a "rel=prev" link. *@
             @if (Model.CurrentPage > 1)
             {
                 <li class="page-item">
@@ -230,6 +250,7 @@
                 <li class="page-item disabled"><span class="page-link" aria-disabled="true">Previous</span></li>
             }
 
+            @* First page + "…" if the current window does not start at 1. *@
             @if (firstPage > 1)
             {
                 <li class="page-item">
@@ -241,6 +262,7 @@
                 }
             }
 
+            @* The page-number window. The current page is marked aria-current="page". *@
             @for (int p = firstPage; p <= lastPage; p++)
             {
                 if (p == Model.CurrentPage)
@@ -257,6 +279,7 @@
                 }
             }
 
+            @* Last page + "…" if the window does not reach TotalPages. *@
             @if (lastPage < Model.TotalPages)
             {
                 if (lastPage < Model.TotalPages - 1)
@@ -268,6 +291,7 @@
                 </li>
             }
 
+            @* Next button: disabled on the last page, otherwise a "rel=next" link. *@
             @if (Model.CurrentPage < Model.TotalPages)
             {
                 <li class="page-item">

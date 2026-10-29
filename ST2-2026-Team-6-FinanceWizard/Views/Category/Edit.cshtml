@@ -3,6 +3,8 @@
     ViewData["Title"] = "Edit category";
 }
 
+@* Same partial as Create. The controller has already put ViewData["CategoryId"] in place,
+   so _CategoryForm will render "Edit category" and post to the Edit action with the id. *@
 <partial name="_CategoryForm" model="Model" />
 
 @section Scripts {
